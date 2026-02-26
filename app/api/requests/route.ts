@@ -6,7 +6,7 @@ export async function POST(request: NextRequest, context: any) {
     const body = await context.body;
     const sql = await connection();
     try {
-        await sql.query('INSERT INTO requests (status, vinyl_a, vinyl_b) VALUES ($1, $2, $3)', [RequestStatus.ACCEPTED, body.vinyl_a, body.vinyl_b]);
+        await sql.query('INSERT INTO requests (status, vinyl_a, vinyl_b) VALUES ($1, $2, $3)', [RequestStatus.PENDING, body.vinyl_a, body.vinyl_b]);
         return NextResponse.json({ status: 200 });
     } catch (error) {
         console.log(error);
