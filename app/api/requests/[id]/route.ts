@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connection } from '@/services/DbConnector';
 
 export async function PUT(request: NextRequest, context: any) {
-    const body = context.body;
+    const body = await context.body;
     const { id } = await context.params;
     const sql = await connection();
     try {

@@ -1,8 +1,8 @@
 import { connection } from '@/services/DbConnector';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest, context: any) {
-    const body = context.body;
+export async function POST(request: NextRequest) {
+    const body = await request.json();
     const sql = await connection();
     const now = new Date();
     try {
