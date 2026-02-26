@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connection } from '@/services/DbConnector';
 
-export async function PUT(request: NextRequest, context: any) {
-    const body = await context.body;
-    const { id } = await context.params;
+export async function PUT(request: NextRequest, { params }: { params: { id: number } }) {
+    const body = await request.json();
+    const { id } = params;
     const sql = await connection();
     try {
         await sql.query('UPDATE requests SET status = $1 WHERE id = $2', [body.status, id]);
@@ -20,7 +20,7 @@ export async function PUT(request: NextRequest, context: any) {
                 'SELECT vinyl_a FROM Request WHERE id = $1\n' +
                 'UNION\n' +
                 'SELECT vinyl_b FROM Request WHERE id = $1\n' +
-                ')', id);
+                ')', [id]);
         }
         return NextResponse.json({ status: 200 });
     } catch (error) {

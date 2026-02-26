@@ -1,8 +1,8 @@
 import { connection } from "@/services/DbConnector"
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(req: NextRequest, context: any) {
-    const { id } = await context.params;
+export async function GET(request: NextRequest, { params }: { params: { id: number } }) {
+    const { id } = params;
     const sql = await connection();
     try {
         const user = await sql.query('SELECT * INTO user WHERE id = $1', [id]);
