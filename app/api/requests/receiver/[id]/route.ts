@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connection } from '@/services/DbConnector';
 
-export async function GET(request: NextRequest, { params }: { params: { id: number } }) {
-    const { id } = params;
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+    const { id } = await params;
     const sql = await connection();
     try {
         const requests = await sql.query(
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: numb
             'FROM Request r\n' +
             'JOIN Vinyls v ON v.id = r.vinyl_b\n' +
             'WHERE v.user_id = $1;',
-            [id]);
+            [parseInt(id)]);
         return NextResponse.json(requests, { status: 200 });
     } catch (error) {
         console.log(error);

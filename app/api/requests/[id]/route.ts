@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connection } from '@/services/DbConnector';
 
-export async function PUT(request: NextRequest, { params }: { params: { id: number } }) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
     const body = await request.json();
-    const { id } = params;
+    const { id } = await params;
     const sql = await connection();
     try {
-        await sql.query('UPDATE requests SET status = $1 WHERE id = $2', [body.status, id]);
+        await sql.query('UPDATE requests SET status = $1 WHERE id = $2', [body.status, parseInt(id)]);
     } catch (error) {
         console.log(error);
         return NextResponse.json({ detail: 'request failed' }, { status: 500 });

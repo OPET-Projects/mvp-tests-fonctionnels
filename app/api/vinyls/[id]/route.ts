@@ -1,11 +1,11 @@
 import { connection } from '@/services/DbConnector'
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest, { params }: { params: { id: number } }) {
-    const { id } = params;
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+    const { id } = await params;
     const sql = await connection();
     try {
-        const vinyl = await sql.query('SELECT * FROM vinyls WHERE id = $1', [id]);
+        const vinyl = await sql.query('SELECT * FROM vinyls WHERE id = $1', [parseInt(id)]);
         return NextResponse.json(vinyl, { status: 200 });
     } catch (error) {
         console.log(error);
