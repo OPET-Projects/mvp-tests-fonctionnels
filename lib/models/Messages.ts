@@ -1,5 +1,5 @@
 export interface Messages {
-    id:string;
+    id:number;
     content:string;
     createdAt:Date;
     userId:string;
