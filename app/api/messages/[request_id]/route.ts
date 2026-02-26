@@ -1,7 +1,7 @@
 import { connection } from '@/services/DbConnector';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest, { params }: { params: { request_id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ request_id: string }> }) {
     const { request_id } = await params;
     const sql = await connection();
     try {
