@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest, context: any) {
     const { request_id } = await context.params;
-    const sql = connection();
+    const sql = await connection();
     try {
         const messages = await sql.query('SELECT * INTO messages WHERE request_id = $1', request_id);
         return NextResponse.json(messages, { status: 200 });

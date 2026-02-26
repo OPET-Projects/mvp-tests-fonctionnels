@@ -4,7 +4,7 @@ import { connection } from '@/services/DbConnector';
 export async function PUT(request: NextRequest, context: any) {
     const body = context.body;
     const { id } = await context.params;
-    const sql = connection();
+    const sql = await connection();
     try {
         await sql.query('UPDATE requests SET status = $1 WHERE id = $2', [body.status, id]);
     } catch (error) {
