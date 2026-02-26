@@ -1,5 +1,5 @@
-import {NextRequest, NextResponse} from "next/server";
-import { connection } from '@/app/services/DbConnector';
+import { NextRequest, NextResponse } from "next/server";
+import { connection } from '@/services/DbConnector';
 
 export async function GET(request: NextRequest, context: any) {
     const { id } = await context.params;

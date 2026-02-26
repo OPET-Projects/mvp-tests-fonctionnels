@@ -1,7 +1,7 @@
-import {NextRequest, NextResponse} from "next/server";
-import { connection } from '@/app/services/DbConnector';
+import { NextRequest, NextResponse } from "next/server";
+import { connection } from '@/services/DbConnector';
 
-export async function PUT(request: NextRequest, context: any){
+export async function PUT(request: NextRequest, context: any) {
     const body = context.body;
     const { id } = await context.params;
     const sql = connection();
@@ -22,7 +22,7 @@ export async function PUT(request: NextRequest, context: any){
                 'SELECT vinyl_b FROM Request WHERE id = $1\n' +
                 ')', id);
         }
-        return NextResponse.json({status: 200});
+        return NextResponse.json({ status: 200 });
     } catch (error) {
         console.log(error);
         return NextResponse.json({ detail: 'request failed' }, { status: 500 });
