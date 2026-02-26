@@ -5,7 +5,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: numb
     const { id } = params;
     const sql = await connection();
     try {
-        const vinyl = await sql.query('SELECT * INTO vinyls WHERE id = $1', [id]);
+        const vinyl = await sql.query('SELECT * FROM vinyls WHERE id = $1', [id]);
         return NextResponse.json(vinyl, { status: 200 });
     } catch (error) {
         console.log(error);
