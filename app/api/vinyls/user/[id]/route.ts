@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest, context: any) {
     const { id } = await context.params;
-    const sql = connection();
+    const sql = await connection();
     try {
         const vinyls = await sql.query('SELECT * INTO vinyls WHERE user_id = $1', id);
         return NextResponse.json(vinyls, { status: 200 });

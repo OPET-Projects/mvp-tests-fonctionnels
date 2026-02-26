@@ -3,7 +3,7 @@ import { connection } from '@/services/DbConnector';
 
 export async function GET(request: NextRequest, context: any) {
     const { id } = await context.params;
-    const sql = connection();
+    const sql = await connection();
     try {
         const requests = await sql.query(
             'SELECT DISTINCT r.*\n' +
