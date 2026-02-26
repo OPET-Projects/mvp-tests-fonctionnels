@@ -1,0 +1,20 @@
+import {NextRequest, NextResponse} from "next/server";
+import { connection } from '@/app/services/DbConnector';
+
+export async function GET(request: NextRequest, context: any) {
+    const { id } = await context.params;
+    const sql = connection();
+    try {
+    const requests = await sql.query(
+        'SELECT DISTINCT r.*\n' +
+        'FROM Request r\n' +
+        'JOIN Vinyls v ON v.id = r.vinyl_a\n' +
+        'WHERE v.user_id = $1;',
+        id);
+    return NextResponse.json(requests,  { status: 200 });
+    } catch (error) {
+        console.log(error);
+        return NextResponse.json({ detail: 'request failed' }, { status: 500 });
+    }
+
+}
