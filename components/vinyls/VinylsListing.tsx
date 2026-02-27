@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Vinyl } from '@/lib/types/vinyls';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card';
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '../ui/card';
 import Image from 'next/image'
 const VinylsListing = ({
   vinyls
@@ -12,15 +12,17 @@ const VinylsListing = ({
       {vinyls.map((vinyl) => (
         <Card key={vinyl.id} className='w-80'>
           <CardHeader>
-            <CardTitle>{vinyl.name}</CardTitle>
+            <CardTitle>{vinyl.title}</CardTitle>
+            <CardDescription>{vinyl.artist}</CardDescription>
           </CardHeader>
           <CardContent className='flex flex-col items-center justify-center'>
-            {vinyl.file_url ?
+            {vinyl.fileUrl ?
               <Image
-              src={vinyl.file_url}
+              src={vinyl.fileUrl}
               width={200}
               height={200}
-              alt="Picture of the author"
+              alt={vinyl.title}
+              loading="lazy"
               /> :
               <Image
               src="https://ik.imagekit.io/gits23/placeholder.png"
@@ -30,7 +32,7 @@ const VinylsListing = ({
               />
             }
 
-            <p>{vinyl.description}</p>
+            <CardDescription >{vinyl.description}</CardDescription>
           </CardContent>
           <CardFooter>
             <Link href={`/echange/${vinyl.id}`} className='text-sm text-white font-semibold bg-black w-full text-center uppercase px-3 py-2 rounded-sm border border-black hover:bg-white hover:text-black transition'>Échanger</Link>
