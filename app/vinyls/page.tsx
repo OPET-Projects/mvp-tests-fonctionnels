@@ -7,6 +7,7 @@ const VinylsPage = async () => {
     name: "Vinyl 1",
     description: "Description of Vinyl 1",
     user_id: 1,
+    file_url: "https://ik.imagekit.io/gits23/Queen_II.jpeg",
     id_request_a: null,
     id_request_b: null
   }, {
@@ -14,6 +15,7 @@ const VinylsPage = async () => {
     name: "Vinyl 2",
     description: "Description of Vinyl 2",
     user_id: 2,
+    file_url: "https://ik.imagekit.io/gits23/nevermind.jpeg",
     id_request_a: null,
     id_request_b: null
   }, {
@@ -21,6 +23,7 @@ const VinylsPage = async () => {
     name: "Vinyl 3",
     description: "Description of Vinyl 3",
     user_id: 1,
+    file_url: "https://ik.imagekit.io/gits23/The-Beatles-Abbey-Road.jpg",
     id_request_a: null,
     id_request_b: null
   }]
