@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Vinyl } from '../../lib/types/vinyls';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card';
+import Image from 'next/image'
 const VinylsListing = ({
   vinyls
 }: {
@@ -13,7 +14,16 @@ const VinylsListing = ({
           <CardHeader>
             <CardTitle>{vinyl.name}</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='flex flex-col items-center justify-center'>
+            {vinyl.file_url &&
+              <Image
+              src={vinyl.file_url}
+              width={200}
+              height={200}
+              alt="Picture of the author"
+              />
+            }
+
             <p>{vinyl.description}</p>
           </CardContent>
           <CardFooter>
