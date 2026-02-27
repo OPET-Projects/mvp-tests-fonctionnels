@@ -4,28 +4,28 @@ import { Vinyl } from "@/lib/types/vinyls";
 const VinylsPage = async () => {
   const vinyls: Vinyl[] = [{
     id: 1,
-    name: "Vinyl 1",
-    description: "Description of Vinyl 1",
-    user_id: 1,
-    file_url: "https://ik.imagekit.io/gits23/Queen_II.jpeg",
-    id_request_a: null,
-    id_request_b: null
+    title: "Queen II",
+    artist: "Queen",
+    description: "As new",
+    fileUrl: "https://ik.imagekit.io/gits23/Queen_II.jpeg",
+    userId: "1",
+    available: true
   }, {
     id: 2,
-    name: "Vinyl 2",
-    description: "Description of Vinyl 2",
-    user_id: 2,
-    file_url: "",
-    id_request_a: null,
-    id_request_b: null
+    title: "Cracker Island",
+    artist: "Gorillaz",
+    description: "Unsealed",
+    fileUrl: "",
+    userId: "1",
+    available: true
   }, {
     id: 3,
-    name: "Vinyl 3",
-    description: "Description of Vinyl 3",
-    user_id: 1,
-    file_url: "https://ik.imagekit.io/gits23/The-Beatles-Abbey-Road.jpg",
-    id_request_a: null,
-    id_request_b: null
+    title: "Abbey Road",
+    artist: "The Beatles",
+    description: "Really good condition",
+    fileUrl: "https://ik.imagekit.io/gits23/The-Beatles-Abbey-Road.jpg",
+    userId: "1",
+    available: true
   }]
   return (
     <VinylsListing vinyls={vinyls} />
