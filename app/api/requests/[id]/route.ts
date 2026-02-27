@@ -35,9 +35,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                 'UPDATE Vinyls\n' +
                 'SET available = false\n' +
                 'WHERE id IN (\n' +
-                'SELECT vinyl_a FROM Request WHERE id = $1\n' +
+                'SELECT vinyl_a FROM Requests WHERE id = $1\n' +
                 'UNION\n' +
-                'SELECT vinyl_b FROM Request WHERE id = $1\n' +
+                'SELECT vinyl_b FROM Requests WHERE id = $1\n' +
                 ')', [id]);
         }
         return NextResponse.json({ status: 200 });
