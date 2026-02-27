@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     try {
         const requests = await sql.query(
             'SELECT DISTINCT r.*\n' +
-            'FROM Request r\n' +
+            'FROM Requests r\n' +
             'JOIN Vinyls v ON v.id = r.vinyl_b\n' +
             'WHERE v.user_id = $1;',
             [parseInt(id)]);
