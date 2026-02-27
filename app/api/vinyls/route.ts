@@ -1,6 +1,21 @@
 import { connection } from '@/services/DbConnector'
 import { NextRequest, NextResponse } from 'next/server'
 
+/**
+ * POST /api/vinyls
+ *
+ * Liste les vinyles disponibles n'appartenant pas à l'utilisateur fourni.
+ *
+ * @param {NextRequest} request - Requête HTTP Next.js (JSON attendu).
+ *
+ * @returns {Promise<NextResponse>}
+ * - 200: liste de vinyles (résultat SQL)
+ * - 500: `{ detail: "request failed" }` si erreur serveur/DB
+ *
+ * @example
+ * // Body JSON
+ * // { "id": 3 }
+ */
 export async function POST(request: NextRequest) {
     const body = await request.json();
     const sql = await connection();
