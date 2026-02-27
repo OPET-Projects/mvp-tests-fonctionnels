@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Vinyl } from '../../lib/types/vinyls';
+import { Vinyl } from '@/lib/types/vinyls';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card';
 import Image from 'next/image'
 const VinylsListing = ({
