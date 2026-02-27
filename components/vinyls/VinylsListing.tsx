@@ -15,9 +15,15 @@ const VinylsListing = ({
             <CardTitle>{vinyl.name}</CardTitle>
           </CardHeader>
           <CardContent className='flex flex-col items-center justify-center'>
-            {vinyl.file_url &&
+            {vinyl.file_url ?
               <Image
               src={vinyl.file_url}
+              width={200}
+              height={200}
+              alt="Picture of the author"
+              /> :
+              <Image
+              src="https://ik.imagekit.io/gits23/placeholder.png"
               width={200}
               height={200}
               alt="Picture of the author"

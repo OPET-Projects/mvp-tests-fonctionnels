@@ -15,7 +15,7 @@ const VinylsPage = async () => {
     name: "Vinyl 2",
     description: "Description of Vinyl 2",
     user_id: 2,
-    file_url: "https://ik.imagekit.io/gits23/nevermind.jpeg",
+    file_url: "",
     id_request_a: null,
     id_request_b: null
   }, {
