@@ -1,35 +1,47 @@
+'use client'
+
 import VinylsListing from "@/components/vinyls/VinylsListing";
-import { Vinyl } from "@/lib/types/vinyls";
+import {Vinyl} from "@/lib/types/vinyls";
+import {useEffect, useState} from "react";
 
-const VinylsPage = async () => {
-  const vinyls: Vinyl[] = [{
-    id: 1,
-    title: "Queen II",
-    artist: "Queen",
-    description: "As new",
-    fileUrl: "https://ik.imagekit.io/gits23/Queen_II.jpeg",
-    userId: "1",
-    available: true
-  }, {
-    id: 2,
-    title: "Cracker Island",
-    artist: "Gorillaz",
-    description: "Unsealed",
-    fileUrl: "",
-    userId: "1",
-    available: true
-  }, {
-    id: 3,
-    title: "Abbey Road",
-    artist: "The Beatles",
-    description: "Really good condition",
-    fileUrl: "https://ik.imagekit.io/gits23/The-Beatles-Abbey-Road.jpg",
-    userId: "1",
-    available: true
-  }]
-  return (
-    <VinylsListing vinyls={vinyls} />
-  );
+export default function VinylsPage() {
+
+    const [vinyls, setVinyls] = useState<Vinyl[]>([]);
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState('')
+
+    const loadVinyls = async () => {
+
+        try {
+            const res = await fetch('/api/vinyls', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({id: 4}),
+            });
+            if (!res.ok) {
+                setError('Impossible de charger les vinyls')
+                return
+            }
+            const data = await res.json();
+            setVinyls(data);
+        } catch {
+            setError('Impossible de charger les vinyls')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        loadVinyls().then();
+    }, [])
+
+    if (loading) return <p className="p-6 text-gray-600">Chargement…</p>
+    if (error) return <p className="p-6 text-red-600">{error}</p>
+    if (!vinyls.length) return <p className="p-6 text-gray-600">Aucun vinyle disponible</p>
+
+    return (
+        <VinylsListing vinyls={vinyls}/>
+    );
 }
-
-export default VinylsPage;
