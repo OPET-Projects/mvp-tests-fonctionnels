@@ -12,7 +12,9 @@ const NavBar = () => {
 
   const isConnected = useSyncExternalStore(
     subscribe,
-    () => localStorage.getItem("userId") !== null,
+    () =>
+      localStorage.getItem("userId") !== null &&
+      localStorage.getItem("userId") !== undefined,
     () => false,
   );
 
