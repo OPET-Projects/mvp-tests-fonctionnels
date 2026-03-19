@@ -1,7 +1,14 @@
 import Link from 'next/link';
 import { Vinyl } from '@/lib/types/vinyls';
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '../ui/card';
-import Image from 'next/image'
+import {
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+} from "../ui/card";
+import Image from 'next/image';
 const VinylsListing = ({
   vinyls
 }: {
@@ -38,15 +45,18 @@ const VinylsListing = ({
                   <CardDescription>{vinyl.description}</CardDescription>
                 </CardContent>
                 <CardFooter>
-                  <Link href={`/echange/${vinyl.id}`}
-                        className='text-sm text-white font-semibold bg-black w-full text-center uppercase px-3 py-2 rounded-sm border border-black hover:bg-white hover:text-black transition'>Échanger</Link>
-
+                    <Link
+                        href={`/barter/${vinyl.id}`}
+                        className="text-sm text-white font-semibold bg-black w-full text-center uppercase px-3 py-2 rounded-sm border border-black hover:bg-white hover:text-black transition"
+                    >
+                        Échanger
+                    </Link>
                 </CardFooter>
               </Card>
             ))}
           </div>
       </div>
   );
-}
+};
 
 export default VinylsListing;
