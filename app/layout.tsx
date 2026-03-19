@@ -20,7 +20,7 @@ export default function RootLayout({
       <body className="antialiased">
         <AuthGuard>
           <NavBar />
-          {children}
+          <main>{children}</main>
         </AuthGuard>
         <Toaster position="bottom-right" />
       </body>
