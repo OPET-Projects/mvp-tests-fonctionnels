@@ -1,10 +1,10 @@
 "use client";
-import { Controller, Form, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Field } from "../ui/field";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const LoginForm = () => {
   const form = useForm({
@@ -13,13 +13,38 @@ const LoginForm = () => {
     },
   })
   const { control, handleSubmit } = form;
+  const router = useRouter()
 
-  const onSumbit = (data: {
+  const onSumbit = async (data: {
     code: string;
   }) => {
-    console.log(data);
-    toast("Connecté avec le code: " + data.code);
-    redirect("/vinyls")
+    const { code } = data;
+    if (!code) {
+      toast.error("Veuillez entrer un code.");
+      return;
+    }
+    try {
+      const response = await fetch("/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code: code
+        })
+      })
+      const responseData = await response.json();
+      if (!response.ok || !responseData) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Erreur inconnue");
+      }
+      toast("Connecté avec le code: " + data.code);
+      localStorage.setItem("userId", responseData.id);
+      router.push("/vinyls");
+    } catch (error) {
+      console.error("Error during login:", error);
+      toast.error("Erreur lors de la connexion. Veuillez réessayer.");
+    }
   }
   return (
     <div
