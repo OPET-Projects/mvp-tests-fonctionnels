@@ -12,13 +12,12 @@ const NavBar = () => {
 
   const isConnected = useSyncExternalStore(
     subscribe,
-    () => localStorage.getItem("isConnected") === "true",
+    () => localStorage.getItem("userId") !== null,
     () => false,
   );
 
   const handleLogout = () => {
-    localStorage.removeItem("isConnected");
-    localStorage.removeItem("userCode");
+    localStorage.removeItem("userId");
     router.push("/");
   };
 
