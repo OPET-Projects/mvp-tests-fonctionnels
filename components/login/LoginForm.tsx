@@ -34,12 +34,13 @@ const LoginForm = () => {
         })
       })
       const responseData = await response.json();
-      if (!response.ok || !responseData) {
+      if (!response.ok || !responseData || !responseData.length) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Erreur inconnue");
       }
+
       toast("Connecté avec le code: " + data.code);
-      localStorage.setItem("userId", responseData.id);
+      localStorage.setItem("userId", responseData[0].id);
       router.push("/vinyls");
     } catch (error) {
       console.error("Error during login:", error);
@@ -57,7 +58,7 @@ const LoginForm = () => {
           name="code"
           render={({ field }) => (
             <Field>
-              <Input placeholder="Code" {...field} />
+              <Input placeholder="Code" type="password" {...field} />
             </Field>
           )}
         />
