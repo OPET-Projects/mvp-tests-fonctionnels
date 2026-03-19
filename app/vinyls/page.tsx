@@ -3,7 +3,7 @@
 import VinylsListing from "@/components/vinyls/VinylsListing";
 import {Vinyl} from "@/lib/types/vinyls";
 import {useEffect, useState} from "react";
-import {getAllVinylsByUserId} from "@/services/VinylsService";
+import {getAllVinyls, getAllVinylsByUserId} from "@/services/VinylsService";
 
 export default function VinylsPage() {
     const [vinyls, setVinyls] = useState<Vinyl[]>([]);
@@ -19,7 +19,7 @@ export default function VinylsPage() {
     useEffect(() => {
         const fetchVinyls = async () => {
             try {
-                const data = await getAllVinylsByUserId(userId);
+                const data = await getAllVinyls(userId);
                 setVinyls(data);
             } catch {
                 setError('Impossible de charger les vinyls');

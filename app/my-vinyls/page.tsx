@@ -4,6 +4,7 @@ import VinylsListing from "@/components/vinyls/VinylsListing";
 import { Vinyl } from "@/lib/types/vinyls";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import {getAllVinylsByUserId} from "@/services/VinylsService";
 
 const MyVinylsPage = () => {
   const [vinyls, setVinyls] = useState<Vinyl[]>([]);
@@ -16,12 +17,7 @@ const MyVinylsPage = () => {
 
   const loadVinyls = async (userId: number) => {
     try {
-      const res = await fetch(`/api/vinyls/user/${userId}`);
-      if (!res.ok) {
-        toast.error("Impossible de charger les vinyles. Veuillez réessayer.");
-        return
-      }
-      const data = await res.json();
+      const data = await getAllVinylsByUserId(userId);
       setVinyls(data);
     } catch {
       toast.error("Impossible de charger les vinyles. Veuillez réessayer.");
@@ -31,7 +27,7 @@ const MyVinylsPage = () => {
   }
 
   useEffect(() => {
-    loadVinyls(userId)
+    loadVinyls(userId).then();
   }, [userId]);
 
   if (loading) return <p className="p-6 text-gray-600">Chargement…</p>

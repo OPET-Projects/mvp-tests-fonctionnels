@@ -1,7 +1,22 @@
 import { Vinyl } from "@/lib/types/vinyls";
 
 export async function getAllVinylsByUserId(userId: number): Promise<Vinyl[]> {
-    const res = await fetch('/api/vinyls', {
+    const res = await fetch(`/api/vinyls/user/${userId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+
+    if (!res.ok) {
+        throw new Error('Impossible de charger les vinyls');
+    }
+
+    return res.json();
+}
+
+export async function getAllVinyls(userId: number): Promise<Vinyl[]> {
+    const res = await fetch(`/api/vinyls/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
