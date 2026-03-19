@@ -73,7 +73,7 @@ const BarterForm = ({
   };
 
   return (
-    <div className="w-full h-screen flex flex-col items-center justify-center gap-3">
+    <div className="w-full flex flex-col items-center gap-3 py-8">
       {" "}
       <p className="text-sm uppercase tracking-widest text-muted-foreground">
         Demande de troc

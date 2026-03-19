@@ -46,9 +46,11 @@ export default function BarterRequestPage() {
     if (error) return <p className="p-6 text-red-600">{error}</p>;
 
     return (
+      <>
         <BarterForm
             vinyl={vinyl}
             propositions={vinyls}
         />
+      </>
     );
 }
