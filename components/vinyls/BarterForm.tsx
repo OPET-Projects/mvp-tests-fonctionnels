@@ -1,7 +1,7 @@
 import { Vinyl } from "../../lib/types/vinyls";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Controller, Form, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 const BarterForm = ({
@@ -21,21 +21,55 @@ const BarterForm = ({
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = form;
 
-  const onSubmit = (data: {
+  const selectedItems = useWatch({
+    control,
+    name: "items",
+  });
+  const selectedItemId = selectedItems?.[0] ?? "";
+  const selectedItem = propositions.find(
+    (proposition) => proposition.id.toString() === selectedItemId,
+  );
+
+  const onSubmit = async (data: {
     vinyl: string;
     items: string[];
     message: string;
   }) => {
-    console.log(data);
-    toast(
-      "Demande de troc envoyée pour : " +
-        data.vinyl +
-        " contre : " +
-        data.items.map((item) => item).join(", "),
-    );
+    try {
+      const response = await fetch("/api/barter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const body = (await response.json()) as {
+          error?: string;
+          detail?: string;
+        };
+        toast.error(body.error ?? body.detail ?? "Erreur lors de l'envoi.");
+        return;
+      }
+
+      toast.success(
+        "Demande de troc envoyée pour : " +
+          data.vinyl +
+          " contre : " +
+          data.items.join(", "),
+      );
+      form.reset({
+        vinyl: vinyl.id.toString(),
+        items: [],
+        message: "",
+      });
+    } catch {
+      toast.error("Erreur réseau lors de l'envoi de la demande.");
+    }
   };
 
   return (
@@ -48,7 +82,7 @@ const BarterForm = ({
         Créer une demande d&lsquo;échange
       </h1>
       <p className="text-base text-muted-foreground">
-        Sélectionnez vos vinyles et décrivez votre proposition.
+        Sélectionnez un vinyle et décrivez votre proposition.
       </p>
       <h2 className="text-lg font-medium">Intéressé par le vinyle :</h2>
       <Card key={1} className="w-80">
@@ -69,43 +103,44 @@ const BarterForm = ({
               <input type="hidden" {...field} value={vinyl.id.toString()} />
             )}
           />
-          <label className="text-sm font-medium">Vinyle à proposer</label>
-          <div className="flex flex-row gap-2">
-            {propositions.map((item) => (
-              <div key={item.id} className="flex items-center gap-2">
-                <Controller
-                  name="items"
-                  control={control}
-                  rules={{
-                    validate: (value) =>
-                      (value?.length ?? 0) > 0 ||
-                      "Sélectionnez au moins un vinyle.",
-                  }}
-                  render={({ field }) => (
-                    <input
-                      type="checkbox"
-                      id={`item-${item.id}`}
-                      value={item.id.toString()}
-                      checked={field.value.includes(item.id.toString())}
-                      onChange={(e) => {
-                        const newValue = e.target.checked
-                          ? [...field.value, item.id.toString()]
-                          : field.value.filter(
-                              (val) => val !== item.id.toString(),
-                            );
-                        field.onChange(newValue);
-                      }}
-                    />
-                  )}
-                />
-                <Card className="h-16 w-45">
-                  <CardHeader>
-                    <CardTitle>{item.name}</CardTitle>
-                  </CardHeader>
-                </Card>
-              </div>
-            ))}
-          </div>
+          <label htmlFor="items" className="text-sm font-medium">
+            Vinyle à proposer
+          </label>
+          <Controller
+            name="items"
+            control={control}
+            rules={{
+              validate: (value) =>
+                (value?.length ?? 0) > 0 || "Sélectionnez un vinyle.",
+            }}
+            render={({ field }) => (
+              <select
+                id="items"
+                className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                value={field.value?.[0] ?? ""}
+                onChange={(e) =>
+                  field.onChange(e.target.value ? [e.target.value] : [])
+                }
+              >
+                <option value="">Sélectionnez un vinyle</option>
+                {propositions.map((item) => (
+                  <option key={item.id} value={item.id.toString()}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          />
+          {selectedItem && (
+            <Card className="w-80">
+              <CardHeader>
+                <CardTitle>{selectedItem.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>{selectedItem.description}</p>
+              </CardContent>
+            </Card>
+          )}
           {errors.items && (
             <p className="text-sm text-destructive">
               {errors.items.message as string}
@@ -140,7 +175,9 @@ const BarterForm = ({
             </p>
           )}
         </div>
-        <Button type="submit">Envoyer la demande</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Envoi..." : "Envoyer la demande"}
+        </Button>
       </form>
     </div>
   );
