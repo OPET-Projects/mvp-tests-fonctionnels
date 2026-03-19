@@ -1,8 +1,9 @@
 import { Vinyl } from "../../lib/types/vinyls";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "../ui/card";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
+import Image from "next/image";
 
 const BarterForm = ({
   vinyl,
@@ -87,7 +88,7 @@ const BarterForm = ({
       <h2 className="text-lg font-medium">Intéressé par le vinyle :</h2>
       <Card key={1} className="w-80">
         <CardHeader>
-          <CardTitle>{vinyl.name}</CardTitle>
+          <CardTitle>{vinyl.title}</CardTitle>
         </CardHeader>
         <CardContent>
           <p>{vinyl.description}</p>
@@ -125,7 +126,7 @@ const BarterForm = ({
                 <option value="">Sélectionnez un vinyle</option>
                 {propositions.map((item) => (
                   <option key={item.id} value={item.id.toString()}>
-                    {item.name}
+                    {item.title}
                   </option>
                 ))}
               </select>
@@ -134,10 +135,26 @@ const BarterForm = ({
           {selectedItem && (
             <Card className="w-80">
               <CardHeader>
-                <CardTitle>{selectedItem.name}</CardTitle>
+                <CardTitle>{selectedItem.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>{selectedItem.description}</p>
+                {vinyl.file_url ?
+                    <Image
+                        src={vinyl.file_url}
+                        width={200}
+                        height={200}
+                        alt={vinyl.title}
+                        loading="lazy"
+                    /> :
+                    <Image
+                        src="https://ik.imagekit.io/gits23/placeholder.png"
+                        width={200}
+                        height={200}
+                        alt="Picture of the author"
+                        loading="lazy"
+                    />
+                }
+                <CardDescription>{vinyl.description}</CardDescription>
               </CardContent>
             </Card>
           )}
