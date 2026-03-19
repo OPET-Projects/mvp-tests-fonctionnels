@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
+import AuthGuard from "@/components/auth/AuthGuard";
 import NavBar from "@/components/navbar/NavBar";
 
 export const metadata: Metadata = {
@@ -17,8 +18,10 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className="antialiased">
-        <NavBar />
-        {children}
+        <AuthGuard>
+          <NavBar />
+          {children}
+        </AuthGuard>
         <Toaster position="bottom-right" />
       </body>
     </html>
