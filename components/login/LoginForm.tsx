@@ -33,12 +33,13 @@ const LoginForm = () => {
           code: code
         })
       })
-      if (!response.ok) {
+      const responseData = await response.json();
+      if (!response.ok || !responseData) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Erreur inconnue");
       }
       toast("Connecté avec le code: " + data.code);
-      localStorage.setItem("userCode", data.code);
+      localStorage.setItem("userId", responseData.id);
       router.push("/vinyls");
     } catch (error) {
       console.error("Error during login:", error);
