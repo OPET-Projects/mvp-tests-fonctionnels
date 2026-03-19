@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSyncExternalStore } from "react";
 
-const subscribe = () => () => {};
+const subscribe = () => () => { };
 
 const NavBar = () => {
   const router = useRouter();
@@ -38,7 +38,7 @@ const NavBar = () => {
                 Accueil
               </Link>
               <Link href="/my-vinyls" className="hover:text-gray-600">
-                Ses vinyles
+                Mes vinyles
               </Link>
               <Link href="/exchanges" className="hover:text-gray-600">
                 Demandes
