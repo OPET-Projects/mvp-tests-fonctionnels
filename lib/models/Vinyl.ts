@@ -3,7 +3,7 @@ export interface Vinyl {
     title:string;
     artist:string;
     description?:string;
-    user_id:string;
+    user_id:number;
     file_url?:string;
     EAN?:number;
     available:boolean;

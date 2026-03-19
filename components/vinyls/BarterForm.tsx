@@ -1,15 +1,8 @@
 import { Vinyl } from "../../lib/types/vinyls";
 import { Button } from "../ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import Image from "next/image";
+import VinylItem from "@/components/vinyls/VinylItem";
 
 const BarterForm = ({
   vinyl,
@@ -92,14 +85,7 @@ const BarterForm = ({
         Sélectionnez un vinyle et décrivez votre proposition.
       </p>
       <h2 className="text-lg font-medium">Intéressé par le vinyle :</h2>
-      <Card key={1} className="w-80">
-        <CardHeader>
-          <CardTitle>{vinyl.title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>{vinyl.description}</p>
-        </CardContent>
-      </Card>
+      <VinylItem vinyl={vinyl} footer={false} />
       <hr className="my-4" />
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
@@ -139,31 +125,7 @@ const BarterForm = ({
             )}
           />
           {selectedItem && (
-            <Card className="w-80">
-              <CardHeader>
-                <CardTitle>{selectedItem.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {vinyl.file_url ? (
-                  <Image
-                    src={vinyl.file_url}
-                    width={200}
-                    height={200}
-                    alt={vinyl.title}
-                    loading="lazy"
-                  />
-                ) : (
-                  <Image
-                    src="https://ik.imagekit.io/gits23/placeholder.png"
-                    width={200}
-                    height={200}
-                    alt="Picture of the author"
-                    loading="lazy"
-                  />
-                )}
-                <CardDescription>{vinyl.description}</CardDescription>
-              </CardContent>
-            </Card>
+              <VinylItem vinyl={selectedItem} footer={false}/>
           )}
           {errors.items && (
             <p className="text-sm text-destructive">
