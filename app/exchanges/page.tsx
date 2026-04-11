@@ -9,17 +9,13 @@ import VinylItem from "@/components/vinyls/VinylItem";
 import { getStatusConfig } from "@/lib/getStatusConfig";
 import {
   EnrichedExchangeRequest,
-  ExchangeRequest,
-  ExchangeUser,
-  StoredUser,
 } from "@/lib/types/exchanges";
-import { Vinyl } from "@/lib/types/vinyls";
+import {
+  fetchCurrentExchangeUser,
+  fetchEnrichedExchangeRequests,
+} from "@/services/ExchangesService";
 
 export const dynamic = 'force-dynamic';
-
-function unwrapApiResult<T>(payload: T | Array<T>): T {
-  return Array.isArray(payload) ? payload[0] : payload;
-}
 
 export default function ExchangesPage() {
   const router = useRouter();
@@ -32,20 +28,8 @@ export default function ExchangesPage() {
 
   useEffect(() => {
     async function loadData() {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) {
-        router.push("/");
-        return;
-      }
-
-      const userData = JSON.parse(userStr) as StoredUser;
-      console.log('User data from localStorage:', userData);
-      setUserName(userData.name);
-      setCurrentUserId(userData.id);
-
-      if (!userData.id) {
-        console.error('User ID is missing, please login again');
-        localStorage.removeItem("user");
+      const storedId = localStorage.getItem("userId");
+      if (!storedId) {
         router.push("/");
         return;
       }
@@ -53,72 +37,15 @@ export default function ExchangesPage() {
       setLoading(true);
 
       try {
-        const [sentResponse, receivedResponse] = await Promise.all([
-          fetch(`/api/requests/sender/${userData.id}`),
-          fetch(`/api/requests/receiver/${userData.id}`),
-        ]);
+        const userId = Number(storedId);
+        setCurrentUserId(userId);
 
-        const sent = await sentResponse.json() as unknown;
-        const received = await receivedResponse.json() as unknown;
-        const sentArray = Array.isArray(sent) ? sent as Array<ExchangeRequest> : [];
-        const receivedArray = Array.isArray(received) ? received as Array<ExchangeRequest> : [];
+        const currentUser = await fetchCurrentExchangeUser(userId);
+        setUserName(currentUser.name);
 
-        console.log('Sent array:', sentArray);
-        console.log('Received array:', receivedArray);
-
-        const enrichSent = await Promise.all(
-          sentArray.map(async (req: ExchangeRequest) => {
-            console.log('Processing request:', req);
-            const [vinylARes, vinylBRes] = await Promise.all([
-              fetch(`/api/vinyls/${req.vinyl_a}`),
-              fetch(`/api/vinyls/${req.vinyl_b}`),
-            ]);
-            const vinylAData = await vinylARes.json() as Vinyl | Array<Vinyl>;
-            const vinylBData = await vinylBRes.json() as Vinyl | Array<Vinyl>;
-            const vinylA = unwrapApiResult(vinylAData);
-            const vinylB = unwrapApiResult(vinylBData);
-
-            console.log('VinylA:', vinylA, 'VinylB:', vinylB);
-
-            const [userARes, userBRes] = await Promise.all([
-              fetch(`/api/users/${vinylA.user_id}`),
-              fetch(`/api/users/${vinylB.user_id}`),
-            ]);
-            const userAData = await userARes.json() as ExchangeUser | Array<ExchangeUser>;
-            const userBData = await userBRes.json() as ExchangeUser | Array<ExchangeUser>;
-            const userA = unwrapApiResult(userAData);
-            const userB = unwrapApiResult(userBData);
-
-            return { ...req, vinylA, vinylB, userA, userB };
-          })
-        );
-
-        const enrichReceived = await Promise.all(
-          receivedArray.map(async (req: ExchangeRequest) => {
-            const [vinylARes, vinylBRes] = await Promise.all([
-              fetch(`/api/vinyls/${req.vinyl_a}`),
-              fetch(`/api/vinyls/${req.vinyl_b}`),
-            ]);
-            const vinylAData = await vinylARes.json() as Vinyl | Array<Vinyl>;
-            const vinylBData = await vinylBRes.json() as Vinyl | Array<Vinyl>;
-            const vinylA = unwrapApiResult(vinylAData);
-            const vinylB = unwrapApiResult(vinylBData);
-
-            const [userARes, userBRes] = await Promise.all([
-              fetch(`/api/users/${vinylA.user_id}`),
-              fetch(`/api/users/${vinylB.user_id}`),
-            ]);
-            const userAData = await userARes.json() as ExchangeUser | Array<ExchangeUser>;
-            const userBData = await userBRes.json() as ExchangeUser | Array<ExchangeUser>;
-            const userA = unwrapApiResult(userAData);
-            const userB = unwrapApiResult(userBData);
-
-            return { ...req, vinylA, vinylB, userA, userB };
-          })
-        );
-
-        setSentRequests(enrichSent);
-        setReceivedRequests(enrichReceived);
+        const { sentRequests, receivedRequests } = await fetchEnrichedExchangeRequests(userId);
+        setSentRequests(sentRequests);
+        setReceivedRequests(receivedRequests);
       } catch (error) {
         console.error("Error loading data:", error);
       } finally {
