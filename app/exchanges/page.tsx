@@ -58,8 +58,6 @@ export default function ExchangesPage() {
 
   const requests = activeTab === "sent" ? sentRequests : receivedRequests;
 
-  if (!userName) return null;
-
   return (
       <main className="min-h-screen">
         <div className="container mx-auto p-6 max-w-4xl">
@@ -88,7 +86,7 @@ export default function ExchangesPage() {
         </button>
       </div>
 
-      {loading ? (
+      {loading || !userName ? (
         <p className="text-gray-500">Chargement...</p>
       ) : !currentUserId ? (
         <div className="text-center py-8">
