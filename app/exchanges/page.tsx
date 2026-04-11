@@ -7,19 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardAction } from "@/components/ui/card";
 import VinylItem from "@/components/vinyls/VinylItem";
 import { getStatusConfig } from "@/lib/getStatusConfig";
-import {
-  EnrichedExchangeRequest,
-} from "@/lib/types/exchanges";
-import {
-  fetchCurrentExchangeUser,
-  fetchEnrichedExchangeRequests,
-} from "@/services/ExchangesService";
+import { EnrichedExchangeRequest } from "@/lib/types/exchanges";
+import { fetchEnrichedExchangeRequests } from "@/services/ExchangesService";
 
 export const dynamic = 'force-dynamic';
 
 export default function ExchangesPage() {
   const router = useRouter();
-  const [userName, setUserName] = useState("");
   const [activeTab, setActiveTab] = useState<"sent" | "received">("sent");
   const [sentRequests, setSentRequests] = useState<Array<EnrichedExchangeRequest>>([]);
   const [receivedRequests, setReceivedRequests] = useState<Array<EnrichedExchangeRequest>>([]);
@@ -35,14 +29,9 @@ export default function ExchangesPage() {
         return;
       }
 
-      setLoading(true);
-
       try {
         const userId = Number(storedId);
         setCurrentUserId(userId);
-
-        const currentUser = await fetchCurrentExchangeUser(userId);
-        setUserName(currentUser.name);
 
         const { sentRequests, receivedRequests } = await fetchEnrichedExchangeRequests(userId);
         setSentRequests(sentRequests);
@@ -60,9 +49,11 @@ export default function ExchangesPage() {
 
   const requests = activeTab === "sent" ? sentRequests : receivedRequests;
 
+  if (loading) return <p className="p-6 text-gray-600">Chargement…</p>;
+  if (error) return <p className="p-6 text-red-600">Impossible de charger les échanges. Veuillez réessayer.</p>;
+
   return (
-      <main className="min-h-screen">
-        <div className="container mx-auto p-6 max-w-4xl">
+    <div className="container mx-auto p-6 max-w-4xl">
       <h1 className="text-3xl font-bold mb-6">Mes demandes d&apos;échange</h1>
 
       <div className="flex gap-2 mb-6 border-b">
@@ -88,18 +79,8 @@ export default function ExchangesPage() {
         </button>
       </div>
 
-      {loading ? (
-        <p className="text-gray-500">Chargement...</p>
-      ) : error ? (
-        <div className="text-center py-8">
-          <p className="text-red-500">Une erreur est survenue lors du chargement des échanges.</p>
-        </div>
-      ) : !currentUserId ? (
-        <div className="text-center py-8">
-          <p className="text-red-500 mb-4">Aucun utilisateur trouvé.</p>
-        </div>
-      ) : requests.length === 0 ? (
-        <p className="text-gray-500">
+      {requests.length === 0 ? (
+        <p className="p-6 text-gray-600">
           {activeTab === "sent"
             ? "Aucune demande envoyée pour le moment."
             : "Aucune demande reçue pour le moment."}
@@ -107,8 +88,6 @@ export default function ExchangesPage() {
       ) : (
         <div className="flex flex-col gap-4">
           {requests.map((request) => {
-            if (!currentUserId) return null;
-
             const isOwnerA = request.vinylA.user_id === currentUserId;
             const myVinyl = isOwnerA ? request.vinylA : request.vinylB;
             const otherVinyl = isOwnerA ? request.vinylB : request.vinylA;
@@ -129,7 +108,7 @@ export default function ExchangesPage() {
                         </CardTitle>
                         <CardDescription>
                           {activeTab === "sent"
-                            ? "Vous proposez votre vinyle contre celui de l'autre utilisateur."
+                            ? `Vous proposez votre vinyle contre celui de ${otherUser.name}.`
                             : `${otherUser.name} propose son vinyle contre le vôtre.`}
                         </CardDescription>
                       </div>
@@ -155,7 +134,6 @@ export default function ExchangesPage() {
           })}
         </div>
       )}
-        </div>
-      </main>
+    </div>
   );
 }
