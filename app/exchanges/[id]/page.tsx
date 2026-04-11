@@ -138,22 +138,30 @@ export default function ExchangeDetailPage() {
               Aucun message pour le moment.
             </p>
           ) : (
-            messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.user_id === currentUserId ? "justify-end" : "justify-start"}`}
-              >
+            messages.map((msg) => {
+              const isOwn = msg.user_id === currentUserId;
+              const senderName = msg.user_id === exchange.userA.id
+                ? exchange.userA.name
+                : exchange.userB.name;
+
+              return (
                 <div
-                  className={`rounded-lg px-4 py-2 max-w-xs text-sm ${
-                    msg.user_id === currentUserId
-                      ? "bg-blue-500 text-white"
-                      : "bg-white border text-gray-800"
-                  }`}
+                  key={msg.id}
+                  className={`flex flex-col gap-1 ${isOwn ? "items-end" : "items-start"}`}
                 >
-                  {msg.content}
+                  <span className="text-xs text-gray-400">{senderName}</span>
+                  <div
+                    className={`rounded-lg px-4 py-2 max-w-xs text-sm ${
+                      isOwn
+                        ? "bg-blue-500 text-white"
+                        : "bg-white border text-gray-800"
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
         {isPending && (
