@@ -138,18 +138,21 @@ export default function ExchangeDetailPage() {
               Aucun message pour le moment.
             </p>
           ) : (
-            messages.map((msg) => {
+            messages.map((msg, index) => {
               const isOwn = msg.user_id === currentUserId;
               const senderName = msg.user_id === exchange.userA.id
                 ? exchange.userA.name
                 : exchange.userB.name;
+              const showName = index === 0 || messages[index - 1].user_id !== msg.user_id;
 
               return (
                 <div
                   key={msg.id}
                   className={`flex flex-col gap-1 ${isOwn ? "items-end" : "items-start"}`}
                 >
-                  <span className="text-xs text-gray-400">{senderName}</span>
+                  {showName && (
+                    <span className="text-xs text-gray-400">{senderName}</span>
+                  )}
                   <div
                     className={`rounded-lg px-4 py-2 max-w-xs text-sm ${
                       isOwn
@@ -159,6 +162,12 @@ export default function ExchangeDetailPage() {
                   >
                     {msg.content}
                   </div>
+                  <span className="text-xs text-gray-400">
+                    {new Date(msg.created_at).toLocaleTimeString("fr-FR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
                 </div>
               );
             })
