@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardDescription, CardAction } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import VinylItem from "@/components/vinyls/VinylItem";
 import { getStatusConfig } from "@/lib/getStatusConfig";
 import { EnrichedExchangeRequest } from "@/lib/types/exchanges";
@@ -106,11 +106,6 @@ export default function ExchangesPage() {
                         <CardTitle>
                           {activeTab === "sent" ? "Demande envoyée à" : "Demande reçue de"} {otherUser.name}
                         </CardTitle>
-                        <CardDescription>
-                          {activeTab === "sent"
-                            ? `Vous proposez votre vinyle contre celui de ${otherUser.name}.`
-                            : `${otherUser.name} propose son vinyle contre le vôtre.`}
-                        </CardDescription>
                       </div>
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
