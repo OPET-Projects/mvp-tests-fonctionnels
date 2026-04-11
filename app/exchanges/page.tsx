@@ -24,6 +24,7 @@ export default function ExchangesPage() {
   const [sentRequests, setSentRequests] = useState<Array<EnrichedExchangeRequest>>([]);
   const [receivedRequests, setReceivedRequests] = useState<Array<EnrichedExchangeRequest>>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -48,6 +49,7 @@ export default function ExchangesPage() {
         setReceivedRequests(receivedRequests);
       } catch (error) {
         console.error("Error loading data:", error);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -86,8 +88,12 @@ export default function ExchangesPage() {
         </button>
       </div>
 
-      {loading || !userName ? (
+      {loading ? (
         <p className="text-gray-500">Chargement...</p>
+      ) : error ? (
+        <div className="text-center py-8">
+          <p className="text-red-500">Une erreur est survenue lors du chargement des échanges.</p>
+        </div>
       ) : !currentUserId ? (
         <div className="text-center py-8">
           <p className="text-red-500 mb-4">Aucun utilisateur trouvé.</p>
