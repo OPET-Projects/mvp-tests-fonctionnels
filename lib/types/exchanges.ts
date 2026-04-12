@@ -24,3 +24,11 @@ export interface EnrichedExchangeRequest extends ExchangeRequest {
   userA: ExchangeUser;
   userB: ExchangeUser;
 }
+
+export interface Message {
+  id: number;
+  content: string;
+  user_id: number;
+  request_id: number;
+  created_at: string;
+}

@@ -43,10 +43,6 @@ async function fetchExchangeRequests(path: string): Promise<Array<ExchangeReques
   return Array.isArray(payload) ? payload as Array<ExchangeRequest> : [];
 }
 
-export async function fetchCurrentExchangeUser(userId: number): Promise<ExchangeUser> {
-  return fetchExchangeUser(userId);
-}
-
 export async function fetchEnrichedExchangeRequests(userId: number): Promise<{
   sentRequests: Array<EnrichedExchangeRequest>;
   receivedRequests: Array<EnrichedExchangeRequest>;
@@ -65,4 +61,11 @@ export async function fetchEnrichedExchangeRequests(userId: number): Promise<{
     sentRequests: enrichedSentRequests,
     receivedRequests: enrichedReceivedRequests,
   };
+}
+
+export async function fetchEnrichedExchangeRequestById(id: number): Promise<EnrichedExchangeRequest> {
+  const response = await fetch(`/api/requests/${id}`);
+  const payload = await response.json() as ExchangeRequest | Array<ExchangeRequest>;
+  const request = unwrapApiResult(payload);
+  return enrichExchangeRequest(request);
 }
