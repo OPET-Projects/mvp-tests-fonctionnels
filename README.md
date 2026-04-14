@@ -1,36 +1,211 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vinyl Swap — Plateforme d'échange de vinyles
 
-## Getting Started
+Vinyl Swap est une application web permettant à des utilisateurs d'échanger des vinyles entre eux. Un utilisateur peut parcourir le catalogue, proposer un échange contre un de ses propres vinyles, négocier par messagerie, puis accepter ou refuser la proposition.
 
-First, run the development server:
+## Stack technique
+
+| Couche | Technologie |
+| --- | --- |
+| Framework | Next.js 16 (App Router) |
+| UI | React 19, TailwindCSS v4, shadcn/ui |
+| Langage | TypeScript |
+| Base de données | PostgreSQL via Neon Serverless |
+| Tests fonctionnels | Playwright |
+
+---
+
+## Prérequis
+
+- Node.js >= 18
+- Un projet [Neon](https://neon.tech) avec la base initialisée (voir section [Base de données](#base-de-données))
+
+---
+
+## Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/OPET-Projects/mvp-tests-fonctionnels.git
+cd mvp-tests-fonctionnels
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Variables d'environnement
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> Section à compléter avec les détails de connexion à la base de données Neon et toute autre variable nécessaire.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Lancer le projet
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Serveur de développement
+npm run dev
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Build de production
+npm run build
+npm run start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+L'application est accessible sur [http://localhost:3000](http://localhost:3000).
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts disponibles
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Commande | Description |
+| --- | --- |
+| `npm run dev` | Serveur de développement avec hot-reload |
+| `npm run build` | Build de production |
+| `npm run start` | Démarre le build de production |
+| `npm run lint` | Vérifie le code avec ESLint |
+| `npm run test:e2e` | Lance les tests Playwright en headless |
+| `npm run test:e2e:ui` | Lance les tests avec l'UI interactive Playwright |
+| `npm run test:e2e:report` | Ouvre le rapport HTML du dernier run de tests |
+
+---
+
+## Base de données
+
+### Schéma
+
+```sql
+CREATE TABLE users (
+  id   SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  code VARCHAR(10)  NOT NULL UNIQUE
+);
+
+CREATE TABLE vinyls (
+  id          SERIAL PRIMARY KEY,
+  title       VARCHAR(255) NOT NULL,
+  artist      VARCHAR(255) NOT NULL,
+  description TEXT,
+  file_url    TEXT,
+  ean         BIGINT,
+  available   BOOLEAN NOT NULL DEFAULT true,
+  user_id     INTEGER NOT NULL REFERENCES users(id),
+  genre       VARCHAR(50)
+);
+
+CREATE TABLE requests (
+  id      SERIAL PRIMARY KEY,
+  status  VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+  vinyl_a INTEGER NOT NULL REFERENCES vinyls(id),
+  vinyl_b INTEGER NOT NULL REFERENCES vinyls(id)
+);
+
+CREATE TABLE messages (
+  id         SERIAL PRIMARY KEY,
+  content    TEXT    NOT NULL,
+  user_id    INTEGER NOT NULL REFERENCES users(id),
+  request_id INTEGER NOT NULL REFERENCES requests(id),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+```
+
+### Gestion des données (rôle administrateur)
+
+Les utilisateurs et les vinyles sont gérés directement en base. Exemples :
+
+```sql
+-- Ajouter un utilisateur
+INSERT INTO users (name, code) VALUES ('Alice', 'ABC123');
+
+-- Ajouter un vinyle et l'attribuer à un utilisateur
+INSERT INTO vinyls (title, artist, description, genre, user_id)
+VALUES ('Kind of Blue', 'Miles Davis', 'Jazz modal classique', 'Jazz', 1);
+
+-- Changer la disponibilité d'un vinyle
+UPDATE vinyls SET available = false WHERE id = 1;
+```
+
+### Genres disponibles
+
+`Rock` `Pop` `Jazz` `Métal` `Rap` `Indie` `Classique` `Électronique` `R&B` `Reggae`
+
+---
+
+## Pages
+
+| Route | Description |
+| --- | --- |
+| `/` | Connexion par code utilisateur |
+| `/vinyls` | Catalogue des vinyles disponibles (hors les siens) |
+| `/my-vinyls` | Mes vinyles |
+| `/barter/[id]` | Formulaire de proposition d'échange pour un vinyle donné |
+| `/exchanges` | Liste des demandes envoyées et reçues |
+| `/exchanges/[id]` | Détail d'un échange : récapitulatif, négociation, actions |
+
+---
+
+## API Routes
+
+### Utilisateurs
+
+| Méthode | Route | Description |
+| --- | --- | --- |
+| `POST` | `/api/users` | Identifier un utilisateur par son code — body : `{ "code": "ABC123" }` |
+| `GET` | `/api/users/[id]` | Récupérer un utilisateur par son id |
+
+### Vinyles
+
+| Méthode | Route | Description |
+| --- | --- | --- |
+| `POST` | `/api/vinyls` | Lister les vinyles disponibles hors ceux de l'utilisateur — body : `{ "id": 1 }` |
+| `GET` | `/api/vinyls/[id]` | Récupérer un vinyle par son id |
+| `GET` | `/api/vinyls/user/[id]` | Lister les vinyles d'un utilisateur |
+
+### Demandes d'échange
+
+| Méthode | Route | Description |
+| --- | --- | --- |
+| `POST` | `/api/barter` | Créer une ou plusieurs demandes d'échange — body : `{ "vinyl": "10", "items": ["5"], "message": "..." }` |
+| `POST` | `/api/requests` | Créer une demande unitaire |
+| `GET` | `/api/requests/[id]` | Récupérer une demande par son id |
+| `PUT` | `/api/requests/[id]` | Mettre à jour le statut — body : `{ "status": "ACCEPTED" \| "REJECTED" }` |
+| `GET` | `/api/requests/sender/[id]` | Demandes envoyées par un utilisateur |
+| `GET` | `/api/requests/receiver/[id]` | Demandes reçues par un utilisateur |
+
+### Messages
+
+| Méthode | Route | Description |
+| --- | --- | --- |
+| `POST` | `/api/messages` | Envoyer un message — body : `{ "content": "...", "user_id": 1, "request_id": 42 }` |
+| `GET` | `/api/messages/[request_id]` | Historique des messages d'une demande |
+
+---
+
+## Statuts d'une demande
+
+| Statut | Description |
+| --- | --- |
+| `PENDING` | En attente — négociation en cours, messages possibles |
+| `ACCEPTED` | Accepté — les deux vinyles sont marqués indisponibles |
+| `REJECTED` | Refusé |
+
+---
+
+## Authentification
+
+L'identification se fait par un **code alphanumérique** attribué à chaque utilisateur en base. Il n'y a pas d'inscription, de récupération de mot de passe, ni de déconnexion. L'`id` de l'utilisateur connecté est conservé dans le `localStorage` du navigateur.
+
+---
+
+## Tests fonctionnels
+
+Les tests couvrent les parcours **catalogue** et **négociation** avec des mocks d'API (pas de base de données réelle).
+
+```bash
+# Lancer les tests (le serveur de dev démarre automatiquement)
+npm run test:e2e
+
+# Mode interactif avec trace et debug
+npm run test:e2e:ui
+```
+
+**Couverture :**
+
+- Login : connexion valide, code invalide, champ vide
+- Catalogue : affichage des vinyles, badge genre, navigation vers barter, liste vide, erreur API
+- Proposition d'échange : soumission valide, validations formulaire, erreur API
+- Négociation : récapitulatif, historique messages, envoi message, actions accept/refus selon rôle, état non-PENDING, erreur API

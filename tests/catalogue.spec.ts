@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 const MOCK_USER = { id: 1, name: 'Alice', code: 'ABC123' };
 
 const MOCK_VINYLS = [
-  { id: 10, title: 'Kind of Blue', artist: 'Miles Davis', description: 'Jazz classique', file_url: null, user_id: 2, available: true },
-  { id: 11, title: 'Nevermind', artist: 'Nirvana', description: 'Grunge américain', file_url: null, user_id: 3, available: true },
+  { id: 10, title: 'Kind of Blue', artist: 'Miles Davis', description: 'Jazz classique', file_url: null, user_id: 2, available: true, genre: 'Jazz' },
+  { id: 11, title: 'Nevermind', artist: 'Nirvana', description: 'Grunge américain', file_url: null, user_id: 3, available: true, genre: 'Rock' },
 ];
 
 test.describe('Parcours catalogue', () => {
@@ -61,6 +61,30 @@ test.describe('Parcours catalogue', () => {
 
     await expect(page).toHaveURL(/\/barter\/10/);
     await expect(page.getByText('Créer une demande')).toBeVisible();
+  });
+
+  test('affiche le genre de chaque vinyle sous forme de badge', async ({ page }) => {
+    await page.route('**/api/vinyls/', async (route) => {
+      await route.fulfill({ json: MOCK_VINYLS });
+    });
+
+    await page.goto('/vinyls');
+
+    await expect(page.getByText('Jazz', { exact: true })).toBeVisible();
+    await expect(page.getByText('Rock', { exact: true })).toBeVisible();
+  });
+
+  test('n\'affiche pas de badge genre si le champ est absent', async ({ page }) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const vinylsWithoutGenre = MOCK_VINYLS.map(({ genre, ...v }) => v);
+    await page.route('**/api/vinyls/', async (route) => {
+      await route.fulfill({ json: vinylsWithoutGenre });
+    });
+
+    await page.goto('/vinyls');
+
+    await expect(page.getByText('Jazz', { exact: true })).not.toBeVisible();
+    await expect(page.getByText('Rock', { exact: true })).not.toBeVisible();
   });
 
   // --- Cas extrême ---

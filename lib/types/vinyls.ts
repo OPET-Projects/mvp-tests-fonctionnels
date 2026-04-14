@@ -7,4 +7,5 @@ export interface Vinyl {
   file_url?:string;
   EAN?:number;
   available:boolean;
+  genre?:string;
 }
