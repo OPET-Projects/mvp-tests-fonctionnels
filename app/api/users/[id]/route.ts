@@ -1,4 +1,5 @@
 import { connection } from "@/services/DbConnector"
+import { UserQueryService } from '@/services/UserQueryService'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -19,8 +20,9 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const sql = await connection();
+    const queries = new UserQueryService(sql);
     try {
-        const user = await sql.query('SELECT id, name FROM users WHERE id = $1', [parseInt(id)]);
+        const user = await queries.getUserById(parseInt(id));
         return NextResponse.json(user, { status: 200 });
     } catch (error) {
         console.log(error);

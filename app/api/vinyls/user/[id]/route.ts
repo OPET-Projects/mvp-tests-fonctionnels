@@ -1,4 +1,5 @@
 import { connection } from '@/services/DbConnector'
+import { VinylQueryService } from '@/services/VinylQueryService'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -19,8 +20,9 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const sql = await connection();
+    const queries = new VinylQueryService(sql);
     try {
-        const vinyls = await sql.query('SELECT * FROM vinyls WHERE user_id = $1', [parseInt(id)]);
+        const vinyls = await queries.getVinylsByUser(parseInt(id));
         return NextResponse.json(vinyls, { status: 200 });
     } catch (error) {
         console.log(error);

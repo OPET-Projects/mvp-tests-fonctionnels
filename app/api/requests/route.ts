@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connection } from '@/services/DbConnector';
-import { RequestStatus } from "@/lib/enums/RequestStatus";
+import { NegotiationCommandService } from '@/services/NegotiationCommandService';
 
 /**
  * POST /api/requests
@@ -24,8 +24,9 @@ import { RequestStatus } from "@/lib/enums/RequestStatus";
 export async function POST(request: NextRequest) {
     const body = await request.json();
     const sql = await connection();
+    const commands = new NegotiationCommandService(sql);
     try {
-        await sql.query('INSERT INTO requests (status, vinyl_a, vinyl_b) VALUES ($1, $2, $3)', [RequestStatus.PENDING, body.vinyl_a, body.vinyl_b]);
+        await commands.proposeExchange(body.vinyl_a, body.vinyl_b);
         return NextResponse.json({ status: 200 });
     } catch (error) {
         console.log(error);
