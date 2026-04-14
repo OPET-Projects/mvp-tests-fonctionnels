@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 const CURRENT_USER = { id: 1, name: 'Alice' };
 const OTHER_USER = { id: 2, name: 'Bob' };
 
-const VINYL_A = { id: 5, title: 'Abbey Road', artist: 'The Beatles', description: '', file_url: null, user_id: CURRENT_USER.id, available: true };
-const VINYL_B = { id: 10, title: 'Kind of Blue', artist: 'Miles Davis', description: '', file_url: null, user_id: OTHER_USER.id, available: true };
+const VINYL_A = { id: 5, title: 'Abbey Road', artist: 'The Beatles', description: '', file_url: null, user_id: CURRENT_USER.id, available: true, genre: 'Rock' };
+const VINYL_B = { id: 10, title: 'Kind of Blue', artist: 'Miles Davis', description: '', file_url: null, user_id: OTHER_USER.id, available: true, genre: 'Jazz' };
 
 // Requête brute retournée par GET /api/requests/42
 const RAW_REQUEST = { id: 42, status: 'PENDING', vinyl_a: VINYL_A.id, vinyl_b: VINYL_B.id };

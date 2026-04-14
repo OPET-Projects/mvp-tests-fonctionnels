@@ -8,6 +8,7 @@ import {
     CardTitle,
     CardDescription,
 } from "../ui/card";
+import { Badge } from "../ui/badge";
 import Image from 'next/image';
 
 const VinylItem = ({
@@ -18,9 +19,10 @@ const VinylItem = ({
 }) => {
     return (
         <Card className='w-80 justify-between'>
-            <CardHeader>
+            <CardHeader className="justify-items-center text-center">
                 <CardTitle>{vinyl.title}</CardTitle>
                 <CardDescription>{vinyl.artist}</CardDescription>
+                {vinyl.genre && <Badge variant="outline" className="w-fit">{vinyl.genre}</Badge>}
             </CardHeader>
             <CardContent className='flex flex-col items-center justify-center'>
                 {vinyl.file_url ?
