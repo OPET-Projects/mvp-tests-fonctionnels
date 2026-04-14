@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connection } from "@/services/DbConnector";
-import { RequestStatus } from "@/lib/enums/RequestStatus";
+import { NegotiationCommandService } from "@/services/NegotiationCommandService";
 
 type BarterRequest = {
   vinyl: string;
@@ -49,15 +49,13 @@ export async function POST(request: NextRequest) {
   }
 
   const sql = await connection();
+  const commands = new NegotiationCommandService(sql);
 
   try {
     await Promise.all(
       offeredVinylIds.map((offeredVinylId) =>
-        sql.query(
-          "INSERT INTO requests (status, vinyl_a, vinyl_b) VALUES ($1, $2, $3)",
-          [RequestStatus.PENDING, offeredVinylId, targetVinylId],
-        ),
-      ),
+        commands.proposeExchange(offeredVinylId, targetVinylId)
+      )
     );
 
     return NextResponse.json({
@@ -67,10 +65,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.log(error);
-
     return NextResponse.json(
       { detail: "request failed" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
