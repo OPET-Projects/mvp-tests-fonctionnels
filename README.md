@@ -11,6 +11,7 @@ Vinyl Swap est une application web permettant à des utilisateurs d'échanger de
 | Langage | TypeScript |
 | Base de données | PostgreSQL via Neon Serverless |
 | Tests fonctionnels | Playwright |
+| Tests unitaires | Vitest |
 
 ---
 
@@ -61,6 +62,8 @@ L'application est accessible sur [http://localhost:3000](http://localhost:3000).
 | `npm run test:e2e` | Lance les tests Playwright en headless |
 | `npm run test:e2e:ui` | Lance les tests avec l'UI interactive Playwright |
 | `npm run test:e2e:report` | Ouvre le rapport HTML du dernier run de tests |
+| `npm run test:unit` | Lance les tests unitaires Vitest (run unique) |
+| `npm run test:unit:watch` | Lance les tests unitaires en mode watch |
 
 ---
 
@@ -175,6 +178,21 @@ UPDATE vinyls SET available = false WHERE id = 1;
 
 ---
 
+## Architecture — CQRS
+
+La logique métier est séparée en services server-side suivant le patron CQRS :
+
+| Service | Rôle | Méthodes |
+| --- | --- | --- |
+| `NegotiationCommandService` | Mutations sur les échanges | `proposeExchange`, `sendMessage`, `acceptExchange`, `rejectExchange` |
+| `NegotiationQueryService` | Lectures sur les échanges | `getExchangeById`, `getExchangesBySender`, `getExchangesByReceiver`, `getExchangesByVinyl`, `getMessageHistory` |
+| `VinylQueryService` | Lectures sur les vinyles | `getAvailableVinyls`, `getVinylsByUser`, `getVinylById` |
+| `UserQueryService` | Lectures sur les utilisateurs | `getUserByCode`, `getUserById` |
+
+Les routes API n'embarquent aucun SQL — elles instancient le service adapté et délèguent.
+
+---
+
 ## Statuts d'une demande
 
 | Statut | Description |
@@ -209,3 +227,29 @@ npm run test:e2e:ui
 - Catalogue : affichage des vinyles, badge genre, navigation vers barter, liste vide, erreur API
 - Proposition d'échange : soumission valide, validations formulaire, erreur API
 - Négociation : récapitulatif, historique messages, envoi message, actions accept/refus selon rôle, état non-PENDING, erreur API
+
+---
+
+## Tests unitaires
+
+Les tests unitaires couvrent les quatre services CQRS. Le client SQL est injecté par constructeur — aucun mock de module, aucune base de données réelle.
+
+```bash
+npm run test:unit
+```
+
+**66 tests répartis sur 4 fichiers :**
+
+| Fichier | Service testé | Tests |
+| --- | --- | --- |
+| `NegotiationCommandService.test.ts` | `NegotiationCommandService` | 20 |
+| `NegotiationQueryService.test.ts` | `NegotiationQueryService` | 25 |
+| `VinylQueryService.test.ts` | `VinylQueryService` | 12 |
+| `UserQueryService.test.ts` | `UserQueryService` | 9 |
+
+**Ce que les tests vérifient :**
+- Ordre et valeurs des paramètres SQL (pas d'inversion vinylA/vinylB, etc.)
+- Retour de tous les résultats (pas seulement le premier)
+- Atomicité de `acceptExchange` : la mise à jour des vinyls n'a pas lieu si celle de la demande échoue
+- Distinction sender/receiver (JOIN sur `vinyl_a` vs `vinyl_b`)
+- Propagation des erreurs DB sans les avaler
