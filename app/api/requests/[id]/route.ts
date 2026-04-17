@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connection } from '@/services/DbConnector';
+import { NegotiationCommandService } from "@/services/NegotiationCommandService";
+import { NegotiationQueryService } from "@/services/NegotiationQueryService";
+import { RequestStatus } from "@/lib/enums/RequestStatus";
 
 /**
  * GET /api/requests/:id
@@ -13,8 +16,9 @@ import { connection } from '@/services/DbConnector';
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const sql = await connection();
+    const queries = new NegotiationQueryService(sql);
     try {
-        const result = await sql.query('SELECT * FROM requests WHERE id = $1', [parseInt(id)]);
+        const result = await queries.getExchangeById(parseInt(id));
         return NextResponse.json(result, { status: 200 });
     } catch (error) {
         console.log(error);
@@ -26,11 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
  * PUT /api/requests/:id
  *
  * Met à jour le statut d'une demande.
- * Si le statut devient `"ACCEPTED"`, la route marque comme indisponibles
- * les deux vinyles associés à la demande.
- *
- * @param {NextRequest} request - Requête HTTP Next.js (JSON attendu).
- * @param {{ params: Promise<{ id: string }> }} context - Contexte Next.js contenant les paramètres de route.
+ * Si le statut devient `"ACCEPTED"`, marque les deux vinyles comme indisponibles.
  *
  * @returns {Promise<NextResponse>}
  * - 200: `{ status: 200 }` si la mise à jour a réussi
@@ -44,22 +44,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const body = await request.json();
     const { id } = await params;
     const sql = await connection();
+    const commands = new NegotiationCommandService(sql);
     try {
-        await sql.query('UPDATE requests SET status = $1 WHERE id = $2', [body.status, parseInt(id)]);
-    } catch (error) {
-        console.log(error);
-        return NextResponse.json({ detail: 'request failed' }, { status: 500 });
-    }
-    try {
-        if (body.status === 'ACCEPTED') {
-            await sql.query(
-                'UPDATE Vinyls\n' +
-                'SET available = false\n' +
-                'WHERE id IN (\n' +
-                'SELECT vinyl_a FROM Requests WHERE id = $1\n' +
-                'UNION\n' +
-                'SELECT vinyl_b FROM Requests WHERE id = $1\n' +
-                ')', [id]);
+        if (body.status === RequestStatus.ACCEPTED) {
+            await commands.acceptExchange(parseInt(id));
+        } else if (body.status === RequestStatus.REJECTED) {
+            await commands.rejectExchange(parseInt(id));
         }
         return NextResponse.json({ status: 200 });
     } catch (error) {

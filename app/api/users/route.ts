@@ -1,4 +1,5 @@
 import { connection } from '@/services/DbConnector'
+import { UserQueryService } from '@/services/UserQueryService'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -19,8 +20,9 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(request: NextRequest) {
     const body = await request.json();
     const sql = await connection();
+    const queries = new UserQueryService(sql);
     try {
-        const user = await sql.query('SELECT * FROM users WHERE code = $1', [body.code])
+        const user = await queries.getUserByCode(body.code);
         return NextResponse.json(user, { status: 200 });
     } catch (error) {
         console.log(error);

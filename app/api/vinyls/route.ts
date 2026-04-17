@@ -1,4 +1,5 @@
 import { connection } from '@/services/DbConnector'
+import { VinylQueryService } from '@/services/VinylQueryService'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -19,8 +20,9 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(request: NextRequest) {
     const body = await request.json();
     const sql = await connection();
+    const queries = new VinylQueryService(sql);
     try {
-        const vinyls = await sql.query('SELECT * FROM vinyls WHERE user_id <> $1 AND available = true', [body.id]);
+        const vinyls = await queries.getAvailableVinyls(body.id);
         return NextResponse.json(vinyls, { status: 200 });
     } catch (error) {
         console.log(error);
