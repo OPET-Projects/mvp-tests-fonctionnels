@@ -5,6 +5,8 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { apiCall, ApiError } from "@/lib/api";
+import { User } from "@/lib/types/user";
 
 const LoginForm = () => {
   const form = useForm({
@@ -24,25 +26,19 @@ const LoginForm = () => {
       return;
     }
     try {
-      const response = await fetch("/api/users", {
+      const user = await apiCall<User>("/api/users", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          code: code
-        })
-      })
-      const responseData = await response.json();
-      if (!response.ok || !responseData || !responseData.length) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Erreur inconnue");
-      }
+        body: JSON.stringify({ code }),
+      });
 
       toast("Connecté avec le code: " + data.code);
-      localStorage.setItem("userId", responseData[0].id);
+      localStorage.setItem("userId", user.id.toString());
       router.push("/vinyls");
     } catch (error) {
+      if (error instanceof ApiError && error.status === 404) {
+        toast.error("Code invalide.");
+        return;
+      }
       console.error("Error during login:", error);
       toast.error("Erreur lors de la connexion. Veuillez réessayer.");
     }

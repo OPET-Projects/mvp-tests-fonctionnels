@@ -5,12 +5,13 @@ import { NextRequest, NextResponse } from 'next/server'
 /**
  * POST /api/users
  *
- * Récupère (au moins) le nom d'un utilisateur à partir d'un code.
+ * Récupère un utilisateur à partir d'un code de connexion.
  *
  * @param {NextRequest} request - Requête HTTP Next.js (JSON attendu).
  *
  * @returns {Promise<NextResponse>}
- * - 200: résultat SQL contenant `name` de l'utilisateur
+ * - 200: utilisateur correspondant au code
+ * - 404: `{ error: "not found" }` si aucun utilisateur ne correspond
  * - 500: `{ detail: "request failed" }` si erreur serveur/DB
  *
  * @example
@@ -22,7 +23,10 @@ export async function POST(request: NextRequest) {
     const sql = await connection();
     const queries = new UserQueryService(sql);
     try {
-        const user = await queries.getUserByCode(body.code);
+        const [user] = await queries.getUserByCode(body.code);
+        if (!user) {
+            return NextResponse.json({ error: 'not found' }, { status: 404 });
+        }
         return NextResponse.json(user, { status: 200 });
     } catch (error) {
         console.log(error);

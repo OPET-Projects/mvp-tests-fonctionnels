@@ -247,3 +247,104 @@ describe('getMessageHistory', () => {
     await expect(service.getMessageHistory(42)).rejects.toThrow('DB failure');
   });
 });
+
+// ---------------------------------------------------------------------------
+
+describe('getEnrichedExchangesForUser', () => {
+  // Lignes brutes renvoyées par la requête SQL à JOINs
+  // (un userId = 1, qui a envoyé REQUEST_A (vinyl_a.user_id = 1) et reçu REQUEST_B (vinyl_b.user_id = 1))
+  const ROW_SENT = {
+    id: 1, status: RequestStatus.PENDING, vinyl_a: 5, vinyl_b: 10,
+    va_id: 5, va_title: 'Abbey Road', va_artist: 'The Beatles', va_description: '',
+    va_file_url: null, va_user_id: 1, va_available: true, va_genre: 'Rock',
+    vb_id: 10, vb_title: 'Kind of Blue', vb_artist: 'Miles Davis', vb_description: '',
+    vb_file_url: null, vb_user_id: 2, vb_available: true, vb_genre: 'Jazz',
+    ua_id: 1, ua_name: 'Alice',
+    ub_id: 2, ub_name: 'Bob',
+  };
+  const ROW_RECEIVED = {
+    id: 2, status: RequestStatus.ACCEPTED, vinyl_a: 20, vinyl_b: 30,
+    va_id: 20, va_title: 'Thriller', va_artist: 'Michael Jackson', va_description: '',
+    va_file_url: null, va_user_id: 3, va_available: false, va_genre: 'Pop',
+    vb_id: 30, vb_title: 'Rumours', vb_artist: 'Fleetwood Mac', vb_description: '',
+    vb_file_url: null, vb_user_id: 1, vb_available: false, vb_genre: 'Rock',
+    ua_id: 3, ua_name: 'Charlie',
+    ub_id: 1, ub_name: 'Alice',
+  };
+
+  it('exécute un seul appel SQL joignant vinyls et users', async () => {
+    mockQuery.mockResolvedValue([]);
+
+    await service.getEnrichedExchangesForUser(1);
+
+    expect(mockQuery).toHaveBeenCalledTimes(1);
+    const [sql] = mockQuery.mock.calls[0];
+    expect(sql).toMatch(/JOIN\s+vinyls/i);
+    expect(sql).toMatch(/JOIN\s+users/i);
+  });
+
+  it('filtre les demandes où l\'utilisateur est sender OU receiver', async () => {
+    mockQuery.mockResolvedValue([]);
+
+    await service.getEnrichedExchangesForUser(7);
+
+    const [sql, params] = mockQuery.mock.calls[0];
+    expect(sql).toMatch(/OR/i);
+    expect(params).toEqual([7]);
+  });
+
+  it('classe une demande en "sent" si l\'utilisateur est propriétaire de vinyl_a', async () => {
+    mockQuery.mockResolvedValue([ROW_SENT]);
+
+    const result = await service.getEnrichedExchangesForUser(1);
+
+    expect(result.sentRequests).toHaveLength(1);
+    expect(result.receivedRequests).toHaveLength(0);
+    expect(result.sentRequests[0].id).toBe(1);
+  });
+
+  it('classe une demande en "received" si l\'utilisateur est propriétaire de vinyl_b', async () => {
+    mockQuery.mockResolvedValue([ROW_RECEIVED]);
+
+    const result = await service.getEnrichedExchangesForUser(1);
+
+    expect(result.sentRequests).toHaveLength(0);
+    expect(result.receivedRequests).toHaveLength(1);
+    expect(result.receivedRequests[0].id).toBe(2);
+  });
+
+  it('sépare correctement sent et received en un seul passage', async () => {
+    mockQuery.mockResolvedValue([ROW_SENT, ROW_RECEIVED]);
+
+    const result = await service.getEnrichedExchangesForUser(1);
+
+    expect(result.sentRequests).toHaveLength(1);
+    expect(result.receivedRequests).toHaveLength(1);
+  });
+
+  it('mappe correctement vinylA, vinylB, userA, userB depuis les colonnes aliasées', async () => {
+    mockQuery.mockResolvedValue([ROW_SENT]);
+
+    const result = await service.getEnrichedExchangesForUser(1);
+    const enriched = result.sentRequests[0];
+
+    expect(enriched.vinylA).toMatchObject({ id: 5, title: 'Abbey Road', user_id: 1 });
+    expect(enriched.vinylB).toMatchObject({ id: 10, title: 'Kind of Blue', user_id: 2 });
+    expect(enriched.userA).toEqual({ id: 1, name: 'Alice' });
+    expect(enriched.userB).toEqual({ id: 2, name: 'Bob' });
+  });
+
+  it('retourne des listes vides si aucune demande n\'existe', async () => {
+    mockQuery.mockResolvedValue([]);
+
+    const result = await service.getEnrichedExchangesForUser(1);
+
+    expect(result).toEqual({ sentRequests: [], receivedRequests: [] });
+  });
+
+  it('propage l\'erreur si la DB échoue', async () => {
+    mockQuery.mockRejectedValue(new Error('DB failure'));
+
+    await expect(service.getEnrichedExchangesForUser(1)).rejects.toThrow('DB failure');
+  });
+});

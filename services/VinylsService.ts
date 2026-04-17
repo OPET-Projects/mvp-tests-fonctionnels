@@ -1,46 +1,17 @@
 import { Vinyl } from "@/lib/types/vinyls";
+import { apiCall } from "@/lib/api";
 
 export async function getAllVinylsByUserId(userId: number): Promise<Vinyl[]> {
-    const res = await fetch(`/api/vinyls/user/${userId}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    });
-
-    if (!res.ok) {
-        throw new Error('Impossible de charger les vinyls');
-    }
-
-    return res.json();
+    return apiCall<Vinyl[]>(`/api/vinyls/user/${userId}`);
 }
 
 export async function getAllVinyls(userId: number): Promise<Vinyl[]> {
-    const res = await fetch(`/api/vinyls/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+    return apiCall<Vinyl[]>(`/api/vinyls/`, {
+        method: "POST",
         body: JSON.stringify({ id: userId }),
     });
-
-    if (!res.ok) {
-        throw new Error('Impossible de charger les vinyls');
-    }
-
-    return res.json();
 }
 
-export async function getVinyl(vinylId: number): Promise<Vinyl[]> {
-    const res = await fetch(`/api/vinyls/${vinylId}`, {
-        method: 'Get',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
-
-    if (!res.ok) {
-        throw new Error('Impossible de charger les vinyls');
-    }
-    return res.json();
+export async function getVinyl(vinylId: number): Promise<Vinyl> {
+    return apiCall<Vinyl>(`/api/vinyls/${vinylId}`);
 }

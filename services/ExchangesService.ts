@@ -4,21 +4,14 @@ import {
   ExchangeUser,
 } from "@/lib/types/exchanges";
 import { Vinyl } from "@/lib/types/vinyls";
-
-function unwrapApiResult<T>(payload: T | Array<T>): T {
-  return Array.isArray(payload) ? payload[0] : payload;
-}
+import { apiCall } from "@/lib/api";
 
 async function fetchExchangeUser(userId: number): Promise<ExchangeUser> {
-  const response = await fetch(`/api/users/${userId}`);
-  const payload = await response.json() as ExchangeUser | Array<ExchangeUser>;
-  return unwrapApiResult(payload);
+  return apiCall<ExchangeUser>(`/api/users/${userId}`);
 }
 
 async function fetchVinyl(vinylId: number): Promise<Vinyl> {
-  const response = await fetch(`/api/vinyls/${vinylId}`);
-  const payload = await response.json() as Vinyl | Array<Vinyl>;
-  return unwrapApiResult(payload);
+  return apiCall<Vinyl>(`/api/vinyls/${vinylId}`);
 }
 
 async function enrichExchangeRequest(
@@ -37,35 +30,23 @@ async function enrichExchangeRequest(
   return { ...request, vinylA, vinylB, userA, userB };
 }
 
-async function fetchExchangeRequests(path: string): Promise<Array<ExchangeRequest>> {
-  const response = await fetch(path);
-  const payload = await response.json() as unknown;
-  return Array.isArray(payload) ? payload as Array<ExchangeRequest> : [];
-}
-
+/**
+ * Récupère en un seul appel HTTP les demandes envoyées et reçues
+ * par un utilisateur, déjà enrichies (vinyles + utilisateurs).
+ * S'appuie sur l'endpoint GET /api/requests/enriched/:userId
+ * qui fait un SQL avec JOINs pour éviter les N+1 requêtes.
+ */
 export async function fetchEnrichedExchangeRequests(userId: number): Promise<{
   sentRequests: Array<EnrichedExchangeRequest>;
   receivedRequests: Array<EnrichedExchangeRequest>;
 }> {
-  const [sentRequests, receivedRequests] = await Promise.all([
-    fetchExchangeRequests(`/api/requests/sender/${userId}`),
-    fetchExchangeRequests(`/api/requests/receiver/${userId}`),
-  ]);
-
-  const [enrichedSentRequests, enrichedReceivedRequests] = await Promise.all([
-    Promise.all(sentRequests.map(enrichExchangeRequest)),
-    Promise.all(receivedRequests.map(enrichExchangeRequest)),
-  ]);
-
-  return {
-    sentRequests: enrichedSentRequests,
-    receivedRequests: enrichedReceivedRequests,
-  };
+  return apiCall<{
+    sentRequests: Array<EnrichedExchangeRequest>;
+    receivedRequests: Array<EnrichedExchangeRequest>;
+  }>(`/api/requests/enriched/${userId}`);
 }
 
 export async function fetchEnrichedExchangeRequestById(id: number): Promise<EnrichedExchangeRequest> {
-  const response = await fetch(`/api/requests/${id}`);
-  const payload = await response.json() as ExchangeRequest | Array<ExchangeRequest>;
-  const request = unwrapApiResult(payload);
+  const request = await apiCall<ExchangeRequest>(`/api/requests/${id}`);
   return enrichExchangeRequest(request);
 }
