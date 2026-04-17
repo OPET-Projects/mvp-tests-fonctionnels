@@ -60,7 +60,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
       }
     };
 
-    validateAuth().then();
+    void validateAuth();
 
     return () => {
       cancelled = true;

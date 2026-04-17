@@ -23,34 +23,39 @@ export default function ExchangeDetailPage() {
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   useEffect(() => {
+    if (!id) return;
+
     const storedId = localStorage.getItem("userId");
     if (!storedId) {
       router.push("/");
       return;
     }
-    setCurrentUserId(Number(storedId));
-  }, [router]);
 
-  useEffect(() => {
-    if (!currentUserId || !id) return;
+    let cancelled = false;
+    const userId = Number(storedId);
+    setCurrentUserId(userId);
 
-    async function loadData() {
+    (async () => {
       try {
         const [enriched, messagesData] = await Promise.all([
           fetchEnrichedExchangeRequestById(Number(id)),
           apiCall<Array<Message>>(`/api/messages/${id}`),
         ]);
-        setExchange(enriched);
-        setMessages(messagesData);
+        if (!cancelled) {
+          setExchange(enriched);
+          setMessages(messagesData);
+        }
       } catch {
-        setError(true);
+        if (!cancelled) setError(true);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
-    }
+    })();
 
-    loadData();
-  }, [currentUserId, id]);
+    return () => {
+      cancelled = true;
+    };
+  }, [id, router]);
 
   async function handleStatusUpdate(status: RequestStatus) {
     try {

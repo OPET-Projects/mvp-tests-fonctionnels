@@ -3,35 +3,40 @@
 import VinylsListing from "@/components/vinyls/VinylsListing";
 import {Vinyl} from "@/lib/types/vinyls";
 import {useEffect, useState} from "react";
-import {getAllVinyls, getAllVinylsByUserId} from "@/services/VinylsService";
+import {getAllVinyls} from "@/services/VinylsService";
 
 export default function VinylsPage() {
     const [vinyls, setVinyls] = useState<Vinyl[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [userId, setUserId] = useState<number>(0);
 
     useEffect(() => {
-        const storedId = window.localStorage.getItem("userId") as string;
-        setUserId(Number.parseInt(storedId, 10));
-    }, []);
+        let cancelled = false;
 
-    useEffect(() => {
-        const fetchVinyls = async () => {
+        const userId = Number.parseInt(
+            window.localStorage.getItem("userId") ?? "0",
+            10,
+        );
+        if (!userId) {
+            setLoading(false);
+            return;
+        }
+
+        (async () => {
             try {
                 const data = await getAllVinyls(userId);
-                setVinyls(data);
+                if (!cancelled) setVinyls(data);
             } catch {
-                setError('Impossible de charger les vinyls');
+                if (!cancelled) setError('Impossible de charger les vinyls');
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
-        };
+        })();
 
-        if (userId > 0) {
-            fetchVinyls().then();
-        }
-    }, [userId]);
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     if (loading) return <p className="p-6 text-gray-600">Chargement…</p>
     if (error) return <p className="p-6 text-red-600">{error}</p>
