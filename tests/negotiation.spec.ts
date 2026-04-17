@@ -23,20 +23,20 @@ async function mockExchangeDetail(page: import('@playwright/test').Page, status 
     if (route.request().method() === 'PUT') {
       await route.fulfill({ status: 200, json: { status: 200 } });
     } else {
-      await route.fulfill({ json: [{ ...RAW_REQUEST, status }] });
+      await route.fulfill({ json: { ...RAW_REQUEST, status } });
     }
   });
   await page.route('**/api/vinyls/5', async (route) => {
-    await route.fulfill({ json: [VINYL_A] });
+    await route.fulfill({ json: VINYL_A });
   });
   await page.route('**/api/vinyls/10', async (route) => {
-    await route.fulfill({ json: [VINYL_B] });
+    await route.fulfill({ json: VINYL_B });
   });
   await page.route('**/api/users/1', async (route) => {
-    await route.fulfill({ json: [CURRENT_USER] });
+    await route.fulfill({ json: CURRENT_USER });
   });
   await page.route('**/api/users/2', async (route) => {
-    await route.fulfill({ json: [OTHER_USER] });
+    await route.fulfill({ json: OTHER_USER });
   });
   await page.route('**/api/messages/42', async (route) => {
     await route.fulfill({ json: MOCK_MESSAGES });
@@ -45,11 +45,8 @@ async function mockExchangeDetail(page: import('@playwright/test').Page, status 
 
 /** Mock la page /exchanges (liste) pour éviter de vrais appels DB après redirection */
 async function mockExchangesList(page: import('@playwright/test').Page, userId: number) {
-  await page.route(`**/api/requests/sender/${userId}`, async (route) => {
-    await route.fulfill({ json: [] });
-  });
-  await page.route(`**/api/requests/receiver/${userId}`, async (route) => {
-    await route.fulfill({ json: [] });
+  await page.route(`**/api/requests/enriched/${userId}`, async (route) => {
+    await route.fulfill({ json: { sentRequests: [], receivedRequests: [] } });
   });
 }
 
@@ -62,7 +59,7 @@ test.describe('Proposition d\'échange (BarterForm)', () => {
     await page.evaluate((id) => localStorage.setItem('userId', String(id)), CURRENT_USER.id);
 
     await page.route('**/api/vinyls/10', async (route) => {
-      await route.fulfill({ json: [VINYL_B] });
+      await route.fulfill({ json: VINYL_B });
     });
     await page.route('**/api/vinyls/user/1', async (route) => {
       await route.fulfill({ json: [VINYL_A] });

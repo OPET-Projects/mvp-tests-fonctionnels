@@ -50,7 +50,7 @@ test.describe('Parcours catalogue', () => {
       await route.fulfill({ json: MOCK_VINYLS });
     });
     await page.route('**/api/vinyls/10', async (route) => {
-      await route.fulfill({ json: [MOCK_VINYLS[0]] });
+      await route.fulfill({ json: MOCK_VINYLS[0] });
     });
     await page.route('**/api/vinyls/user/1', async (route) => {
       await route.fulfill({ json: [{ id: 5, title: 'Abbey Road', artist: 'The Beatles', description: '', file_url: null, user_id: 1, available: true }] });
@@ -117,7 +117,7 @@ test.describe('Login', () => {
 
   test('connexion réussie redirige vers /vinyls', async ({ page }) => {
     await page.route('**/api/users', async (route) => {
-      await route.fulfill({ json: [MOCK_USER] });
+      await route.fulfill({ json: MOCK_USER });
     });
     await page.route('**/api/vinyls/', async (route) => {
       await route.fulfill({ json: MOCK_VINYLS });
@@ -132,14 +132,14 @@ test.describe('Login', () => {
 
   test('code invalide affiche un toast d\'erreur', async ({ page }) => {
     await page.route('**/api/users', async (route) => {
-      await route.fulfill({ json: [] });
+      await route.fulfill({ status: 404, json: { error: 'not found' } });
     });
 
     await page.goto('/');
     await page.getByPlaceholder('Code').fill('WRONG1');
     await page.getByRole('button', { name: 'Se connecter' }).click();
 
-    await expect(page.getByText(/Erreur lors de la connexion/i)).toBeVisible();
+    await expect(page.getByText(/Code invalide/i)).toBeVisible();
   });
 
   test('champ vide affiche un toast d\'erreur', async ({ page }) => {
