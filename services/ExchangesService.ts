@@ -5,20 +5,20 @@ import {
 } from "@/lib/types/exchanges";
 import { Vinyl } from "@/lib/types/vinyls";
 
-function unwrapApiResult<T>(payload: T | Array<T>): T {
-  return Array.isArray(payload) ? payload[0] : payload;
-}
-
 async function fetchExchangeUser(userId: number): Promise<ExchangeUser> {
   const response = await fetch(`/api/users/${userId}`);
-  const payload = await response.json() as ExchangeUser | Array<ExchangeUser>;
-  return unwrapApiResult(payload);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch user ${userId}`);
+  }
+  return (await response.json()) as ExchangeUser;
 }
 
 async function fetchVinyl(vinylId: number): Promise<Vinyl> {
   const response = await fetch(`/api/vinyls/${vinylId}`);
-  const payload = await response.json() as Vinyl | Array<Vinyl>;
-  return unwrapApiResult(payload);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch vinyl ${vinylId}`);
+  }
+  return (await response.json()) as Vinyl;
 }
 
 async function enrichExchangeRequest(
@@ -65,7 +65,9 @@ export async function fetchEnrichedExchangeRequests(userId: number): Promise<{
 
 export async function fetchEnrichedExchangeRequestById(id: number): Promise<EnrichedExchangeRequest> {
   const response = await fetch(`/api/requests/${id}`);
-  const payload = await response.json() as ExchangeRequest | Array<ExchangeRequest>;
-  const request = unwrapApiResult(payload);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch request ${id}`);
+  }
+  const request = (await response.json()) as ExchangeRequest;
   return enrichExchangeRequest(request);
 }

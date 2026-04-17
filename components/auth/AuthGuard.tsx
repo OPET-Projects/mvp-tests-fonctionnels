@@ -41,11 +41,8 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
         }
 
         const data = await response.json();
-        const userExists = Array.isArray(data)
-          ? data.length > 0
-          : Boolean(data?.id);
 
-        if (!userExists) {
+        if (!data?.id) {
           localStorage.removeItem("userId");
           if (!cancelled) {
             setStatus("unauthorized");

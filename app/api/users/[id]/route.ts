@@ -11,7 +11,8 @@ import { NextRequest, NextResponse } from 'next/server'
  * @param {{ params: Promise<{ id: string }> }} context - Contexte Next.js contenant les paramètres de route.
  *
  * @returns {Promise<NextResponse>}
- * - 200: utilisateur (résultat SQL)
+ * - 200: utilisateur
+ * - 404: `{ error: "not found" }` si l'utilisateur n'existe pas
  * - 500: `{ detail: "request failed" }` si erreur serveur/DB
  *
  * @example
@@ -22,7 +23,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const sql = await connection();
     const queries = new UserQueryService(sql);
     try {
-        const user = await queries.getUserById(parseInt(id));
+        const [user] = await queries.getUserById(parseInt(id));
+        if (!user) {
+            return NextResponse.json({ error: 'not found' }, { status: 404 });
+        }
         return NextResponse.json(user, { status: 200 });
     } catch (error) {
         console.log(error);

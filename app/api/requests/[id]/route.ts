@@ -10,7 +10,8 @@ import { RequestStatus } from "@/lib/enums/RequestStatus";
  * Retourne une demande d'échange par identifiant.
  *
  * @returns {Promise<NextResponse>}
- * - 200: demande (résultat SQL)
+ * - 200: demande
+ * - 404: `{ error: "not found" }` si la demande n'existe pas
  * - 500: `{ detail: "request failed" }` si erreur serveur/DB
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -18,7 +19,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const sql = await connection();
     const queries = new NegotiationQueryService(sql);
     try {
-        const result = await queries.getExchangeById(parseInt(id));
+        const [result] = await queries.getExchangeById(parseInt(id));
+        if (!result) {
+            return NextResponse.json({ error: 'not found' }, { status: 404 });
+        }
         return NextResponse.json(result, { status: 200 });
     } catch (error) {
         console.log(error);
