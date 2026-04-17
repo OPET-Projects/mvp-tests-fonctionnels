@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import VinylItem from "@/components/vinyls/VinylItem";
+import { apiCall, ApiError } from "@/lib/api";
 
 const BarterForm = ({
   vinyl,
@@ -39,22 +40,10 @@ const BarterForm = ({
     message: string;
   }) => {
     try {
-      const response = await fetch("/api/barter", {
+      await apiCall("/api/barter", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(data),
       });
-
-      if (!response.ok) {
-        const body = (await response.json()) as {
-          error?: string;
-          detail?: string;
-        };
-        toast.error(body.error ?? body.detail ?? "Erreur lors de l'envoi.");
-        return;
-      }
 
       toast.success(
         "Demande de troc envoyée pour : " +
@@ -67,7 +56,11 @@ const BarterForm = ({
         items: [],
         message: "",
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof ApiError) {
+        toast.error(error.message);
+        return;
+      }
       toast.error("Erreur réseau lors de l'envoi de la demande.");
     }
   };

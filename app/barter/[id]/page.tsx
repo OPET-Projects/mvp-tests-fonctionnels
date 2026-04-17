@@ -28,7 +28,7 @@ export default function BarterRequestPage() {
             try {
                 const vinyl = await getVinyl(id);
                 const data = await getAllVinylsByUserId(userId);
-                setVinyl(vinyl[0]);
+                setVinyl(vinyl);
                 setVinyls(data);
             } catch {
                 setError('Impossible de charger les vinyls');

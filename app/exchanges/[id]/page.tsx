@@ -9,6 +9,8 @@ import { getStatusConfig } from "@/lib/getStatusConfig";
 import { EnrichedExchangeRequest, Message } from "@/lib/types/exchanges";
 import { RequestStatus } from "@/lib/enums/RequestStatus";
 import { fetchEnrichedExchangeRequestById } from "@/services/ExchangesService";
+import { apiCall } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function ExchangeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -34,13 +36,12 @@ export default function ExchangeDetailPage() {
 
     async function loadData() {
       try {
-        const [enriched, messagesRes] = await Promise.all([
+        const [enriched, messagesData] = await Promise.all([
           fetchEnrichedExchangeRequestById(Number(id)),
-          fetch(`/api/messages/${id}`),
+          apiCall<Array<Message>>(`/api/messages/${id}`),
         ]);
         setExchange(enriched);
-        const messagesData = await messagesRes.json();
-        setMessages(Array.isArray(messagesData) ? messagesData : []);
+        setMessages(messagesData);
       } catch {
         setError(true);
       } finally {
@@ -52,32 +53,37 @@ export default function ExchangeDetailPage() {
   }, [currentUserId, id]);
 
   async function handleStatusUpdate(status: RequestStatus) {
-    await fetch(`/api/requests/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    router.push("/exchanges");
+    try {
+      await apiCall(`/api/requests/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ status }),
+      });
+      router.push("/exchanges");
+    } catch {
+      toast.error("Impossible de mettre à jour l'échange.");
+    }
   }
 
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId) return;
 
-    await fetch("/api/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        content: newMessage,
-        user_id: currentUserId,
-        request_id: Number(id),
-      }),
-    });
+    try {
+      await apiCall("/api/messages", {
+        method: "POST",
+        body: JSON.stringify({
+          content: newMessage,
+          user_id: currentUserId,
+          request_id: Number(id),
+        }),
+      });
 
-    setNewMessage("");
-    const res = await fetch(`/api/messages/${id}`);
-    const data = await res.json();
-    setMessages(Array.isArray(data) ? data : []);
+      setNewMessage("");
+      const data = await apiCall<Array<Message>>(`/api/messages/${id}`);
+      setMessages(data);
+    } catch {
+      toast.error("Impossible d'envoyer le message.");
+    }
   }
 
   if (loading) return <p className="p-6 text-gray-600">Chargement…</p>;

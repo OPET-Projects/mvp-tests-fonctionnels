@@ -2,6 +2,8 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
+import { apiCall } from "@/lib/api";
+import { User } from "@/lib/types/user";
 
 type AuthGuardProps = {
   children: ReactNode;
@@ -35,14 +37,9 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
       }
 
       try {
-        const response = await fetch(`/api/users/${userId}`);
-        if (!response.ok) {
-          throw new Error("User validation failed");
-        }
+        const user = await apiCall<User>(`/api/users/${userId}`);
 
-        const data = await response.json();
-
-        if (!data?.id) {
+        if (!user?.id) {
           localStorage.removeItem("userId");
           if (!cancelled) {
             setStatus("unauthorized");

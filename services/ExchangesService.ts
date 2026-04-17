@@ -4,21 +4,14 @@ import {
   ExchangeUser,
 } from "@/lib/types/exchanges";
 import { Vinyl } from "@/lib/types/vinyls";
+import { apiCall } from "@/lib/api";
 
 async function fetchExchangeUser(userId: number): Promise<ExchangeUser> {
-  const response = await fetch(`/api/users/${userId}`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch user ${userId}`);
-  }
-  return (await response.json()) as ExchangeUser;
+  return apiCall<ExchangeUser>(`/api/users/${userId}`);
 }
 
 async function fetchVinyl(vinylId: number): Promise<Vinyl> {
-  const response = await fetch(`/api/vinyls/${vinylId}`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch vinyl ${vinylId}`);
-  }
-  return (await response.json()) as Vinyl;
+  return apiCall<Vinyl>(`/api/vinyls/${vinylId}`);
 }
 
 async function enrichExchangeRequest(
@@ -38,9 +31,7 @@ async function enrichExchangeRequest(
 }
 
 async function fetchExchangeRequests(path: string): Promise<Array<ExchangeRequest>> {
-  const response = await fetch(path);
-  const payload = await response.json() as unknown;
-  return Array.isArray(payload) ? payload as Array<ExchangeRequest> : [];
+  return apiCall<Array<ExchangeRequest>>(path);
 }
 
 export async function fetchEnrichedExchangeRequests(userId: number): Promise<{
@@ -64,10 +55,6 @@ export async function fetchEnrichedExchangeRequests(userId: number): Promise<{
 }
 
 export async function fetchEnrichedExchangeRequestById(id: number): Promise<EnrichedExchangeRequest> {
-  const response = await fetch(`/api/requests/${id}`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch request ${id}`);
-  }
-  const request = (await response.json()) as ExchangeRequest;
+  const request = await apiCall<ExchangeRequest>(`/api/requests/${id}`);
   return enrichExchangeRequest(request);
 }
