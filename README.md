@@ -17,7 +17,7 @@ Vinyl Swap est une application web permettant à des utilisateurs d'échanger de
 
 ## Prérequis
 
-- Node.js >= 18
+- Node.js >= 20.19.0
 - Un projet [Neon](https://neon.tech) avec la base initialisée (voir section [Base de données](#base-de-données))
 
 ---
