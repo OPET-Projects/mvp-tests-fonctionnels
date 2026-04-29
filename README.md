@@ -258,18 +258,11 @@ npm run test:unit
 
 Le workflow se déclenche sur tous les push et pull_request. Il comporte 3 jobs :
 
-| Job | Outil | Declencheur
-
-
-┌────────────┬─────────────────────────┬──────────────────┐                                                                                            
-│    Job     │          Outil          │   Déclencheur    │                                                                                            
-├────────────┼─────────────────────────┼──────────────────┤                                                                                            
-│ unit-tests │ Vitest                  │ Toujours         │                                                                                            
-├────────────┼─────────────────────────┼──────────────────┤
-│ e2e-tests  │ Playwright (Chromium)   │ Après unit-tests │                                                                                            
-├────────────┼─────────────────────────┼──────────────────┤
-│ load-tests │ Vitest (config séparée) │ Après unit-tests │                                                                                            
-└────────────┴─────────────────────────┴──────────────────┘
+| Job | Outil | Déclencheur |
+| --- | --- | --- |
+| unit-tests | Vitest | Toujours |
+| e2e-tests | Playwright (Chromium) | Après unit-tests |
+| load-tests | Vitest (config séparée) | Après unit-tests |
 
 Chaque étape utilise npm ci (reproductible) + actions/setup-node@v4 avec cache npm. Le job E2E fait un npm run build avant les tests et publie le      
 rapport Playwright comme artefact. Un échec dans n'importe quelle étape interrompt le pipeline (exit code != 0 → GitHub Actions stoppe le job).
