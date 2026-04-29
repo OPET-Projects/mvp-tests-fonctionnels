@@ -253,3 +253,31 @@ npm run test:unit
 - Atomicité de `acceptExchange` : la mise à jour des vinyls n'a pas lieu si celle de la demande échoue
 - Distinction sender/receiver (JOIN sur `vinyl_a` vs `vinyl_b`)
 - Propagation des erreurs DB sans les avaler
+
+## CI GitHub Actions (.github/workflows/ci.yml)
+
+Le workflow se déclenche sur tous les push et pull_request. Il comporte 3 jobs :
+
+| Job | Outil | Déclencheur |
+| --- | --- | --- |
+| unit-tests | Vitest | Toujours |
+| e2e-tests | Playwright (Chromium) | Après unit-tests |
+| load-tests | Vitest (config séparée) | Après unit-tests |
+
+Chaque étape utilise npm ci (reproductible) + actions/setup-node@v4 avec cache npm. Le job E2E fait un npm run build avant les tests et publie le      
+rapport Playwright comme artefact. Un échec dans n'importe quelle étape interrompt le pipeline (exit code != 0 → GitHub Actions stoppe le job).
+
+La variable DATABASE_URL est lue depuis les secrets GitHub pour les E2E (les mocks Playwright ne l'utilisent pas, mais le build en a besoin si Next.js
+y accède au démarrage).
+                                                                                                                                                         
+---                                                       
+## Tests de charge (tests/load/negotiation.load.test.ts)
+
+6 scénarios avec 50 opérations concurrentes via Promise.all sur un faux client SQL partagé en mémoire :
+
+1. 50 proposeExchange simultanés → 50 lignes, IDs uniques, tous PENDING
+2. 50 sendMessage simultanés sur la même demande → pas de perte, timestamps valides
+3. 50 acceptExchange simultanés sur la même demande → statut final ACCEPTED, les deux vinyles available = false (pas de double-toggle)
+4. Propositions entrelacées sur 3 paires de vinyles → chaque demande pointe sur la bonne paire, pas de croisement
+5. Accepter/Refuser en parallèle des demandes distinctes → statuts cohérents, pas d'inversion
+6. 50 demandes × 5 messages chacune → historique complet, aucun message orphelin 
